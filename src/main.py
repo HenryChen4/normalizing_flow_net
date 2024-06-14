@@ -43,8 +43,7 @@ def generate_data(arm_dim, num_rows, random_sample_seed):
         num_rows (int): Size of dataset.
         random_sample_seed (int): Random sample seed.
     Returns:
-        data (list): Array containing features, cartesian x and y,
-        and targets, joint positions.
+        data (tuple): (arm_soln, x, y)
     """
     data = []
     for i in range(num_rows):
@@ -55,53 +54,101 @@ def generate_data(arm_dim, num_rows, random_sample_seed):
     return data
 
 """START of testing"""
+
+# rng = np.random.default_rng(seed=315)
+
+# # (hyper) parameters ??
+# arm_dim = 10
+# target_cartesian = np.array((5, 7))
+# num_coupling_layers = 15
+
+# # seeds
+# arm_gen_seed = 124
+# permute_seed = 432
+
+# # sample the arm
+# arm_link_lens = np.repeat(1, arm_dim)
+# initial_arm_sample = sample_arm_input(arm_dim=arm_dim,
+#                                       seed=arm_gen_seed)
+
+# print(initial_arm_sample)
+
+# # sample c, supposed to be sampled every epoch
+# c = rng.uniform(0, 1)
+
+# # initialize the flow net
+# # you take half the arm, cartesian (x, y), and random c as input
+# # you output 2 things, s and t, and functionally you just split the final vector
+# conditional_net_config = {
+#     "layer_specs": [(arm_dim//2 + 3, 128),
+#                     (128, 128),
+#                     (128, 128),
+#                     (128, arm_dim)],
+#     "activation": nn.LeakyReLU,
+# }
+
+# normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
+#                                             num_layers=num_coupling_layers)
+
+# arm_solutions = normalizing_flow_net(initial_arm_solutions=initial_arm_sample,
+#                              car_x=target_cartesian[0],
+#                              car_y=target_cartesian[1],
+#                              c=c,
+#                              permute_seed=permute_seed)
+
+# # visualize final arm output
+# fig, ax = plt.subplots(figsize=(8, 8))
+
+# visualize(solution=arm_solutions[0].detach().numpy(),
+#           link_lengths=arm_link_lens,
+#           objective=10,
+#           ax=ax)
+
+# plt.show()
+
+"""END of testing"""
+
+"""START of training"""
+
 rng = np.random.default_rng(seed=315)
 
 # (hyper) parameters ??
 arm_dim = 10
-target_cartesian = np.array((5, 7))
-num_coupling_layers = 1
+target_cartesian = np.array((3, 4))
+
+num_coupling_layers = 20
+
+num_data = 30000
+num_iters = 1000
+learning_rate = 5e-4
 
 # seeds
-arm_gen_seed = 124
-permute_seed = 432
+arm_gen_seed = 413
+permute_seed = 149914
+c_seed = 413234
 
-# sample the arm
-arm_link_lens = np.repeat(1, arm_dim)
-initial_arm_sample = sample_arm_input(arm_dim=arm_dim,
-                                      seed=arm_gen_seed)
+# generate data
+data = generate_data(arm_dim=arm_dim,
+                     num_rows=num_data,
+                     random_sample_seed=arm_gen_seed)
 
-# sample c, supposed to be sampled every epoch
-c = rng.uniform(0, 1)
-
-# initialize the flow net
+# model configs
 conditional_net_config = {
-    "layer_specs": [(arm_dim//2 + 3, 512),
-                    (512, 512),
-                    (512, 512),
-                    (512, 2)],
+    "layer_specs": [(arm_dim//2 + 3, 128),
+                    (128, 128),
+                    (128, 128),
+                    (128, arm_dim)],
     "activation": nn.LeakyReLU,
 }
 
 normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
                                             num_layers=num_coupling_layers)
 
-arm_solutions = normalizing_flow_net.forward(initial_arm_solutions=initial_arm_sample,
-                             car_x=target_cartesian[0],
-                             car_y=target_cartesian[1],
-                             c=c,
-                             permute_seed=permute_seed)
+normalizing_flow_net.train(arm_dim=arm_dim,
+                           data=data,
+                           num_iters=num_iters,
+                           learning_rate=learning_rate,
+                           c_seed=c_seed,
+                           permute_seed=permute_seed)
 
-print(arm_solutions)
-
-# visualize final arm output
-fig, ax = plt.subplots(figsize=(8, 8))
-
-visualize(solution=arm_solutions.detach().numpy(),
-          link_lengths=arm_link_lens,
-          objective=10,
-          ax=ax)
-
-plt.show()
-
-"""END of testing"""
+"""END of training"""

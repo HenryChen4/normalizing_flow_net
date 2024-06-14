@@ -104,18 +104,53 @@ class Normalizing_Flow_Net(nn.Module):
     
     def forward(self, initial_arm_solutions, car_x, car_y, c, permute_seed):
         arm_solutions = torch.tensor(initial_arm_solutions, dtype=torch.float32)
+        log_det_jacobian = 0.0
 
         for i in range(self.num_layers):
             # first feed through coupling
             c_layer = Coupling_Layer(self.conditional_net)
             arm_solutions, s = c_layer.forward(arm_solutions, car_x, car_y, c)
 
+            # derivative of f wrt to x. only s remains.
+            log_det_jacobian += torch.sum(torch.log(torch.abs(s)))
+
             # permute the solutions
             p_layer = Permute_Layer(arm_solutions, permute_seed)
             arm_solutions = p_layer.forward()
 
-        return arm_solutions
+        return arm_solutions, log_det_jacobian
     
-    def train(self, data, num_iters, noise_seed, permute_seed, lr=0.001):
-        pass
+    def ikflow_loss(self, og_sampled_arm, log_det_jacobian):
+        # compute -log(P_z(z))
+        z_l2_norm = 0.0
+        for i in og_sampled_arm:
+            z_l2_norm += i ** 2
+        z_l2_norm = torch.sqrt(torch.tensor(z_l2_norm))
+        arm_dim = len(og_sampled_arm)
+        log_pz = arm_dim * torch.log(torch.tensor(2*torch.pi)) + z_l2_norm
+        return -0.5 * (log_pz - log_det_jacobian)
+
+    def train(self, arm_dim, data, num_iters, learning_rate, c_seed, permute_seed):
+        optimizer = optim.RAdam(self.conditional_net.parameters(), lr=learning_rate)
+        for epoch in range(num_iters):
+            epoch_loss = 0.0
+            # making sure to generate new c each epoch
+            rng = np.random.default_rng(c_seed + epoch)
+            c = rng.uniform(0, 1)
+            v = rng.normal(0, c, size=arm_dim)
+            for i, (og_sampled_arm, car_x, car_y) in enumerate(data):
+                modified_arm = og_sampled_arm + v
+                new_arm_solution, log_det_jacobian = self.forward(initial_arm_solutions=modified_arm,
+                                                                  car_x=car_x,
+                                                                  car_y=car_y,
+                                                                  c=c,
+                                                                  permute_seed=permute_seed)
                 
+                # compute loss and backpropagate
+                single_loss = self.ikflow_loss(modified_arm, log_det_jacobian)
+                optimizer.zero_grad()
+                single_loss.backward()
+                optimizer.step()
+
+                epoch_loss += single_loss.item()
+            print(f"epoch: {epoch}, loss: {epoch_loss/len(data)}")
