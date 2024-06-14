@@ -12,14 +12,28 @@ class Conditional_Net(nn.Module):
             layers.append(
                 nn.Linear(shape[0],
                           shape[1],
-                          bias=shape[2] if len(shape) == 3 else True)
+                          bias=shape[2] if len(shape) == 3 else False)
             )
             if i != len(layer_specs) - 1:
                 layers.append(activation())
         self.model = nn.Sequential(*layers)
     
     def forward(self, input):
+        # first normalize inputs
+        input = (input - input.mean()) / input.std()
+        # forward prop
         return self.model(input)
+
+    def initialize(self, func):
+        def init_weights(m):
+            if isinstance(m, nn.Linear):
+                func(m.weight)
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)  # Biases init to zero.
+
+        self.apply(init_weights)
+
+        return self
     
 class Coupling_Layer:
     """Transforms sampled arm solution through an affine
@@ -72,6 +86,7 @@ class Coupling_Layer:
         c = torch.tensor(c, dtype=torch.float32)
         
         s, t = self.get_s_t(const_arm_soln, car_pose, c)
+
         altered_arm_soln = altered_arm_soln * torch.exp(s) + t
 
         return torch.cat((const_arm_soln, altered_arm_soln), dim=0), s
@@ -101,6 +116,7 @@ class Normalizing_Flow_Net(nn.Module):
     def __init__(self, conditional_net_config, num_layers):
         super().__init__()
         self.conditional_net = Conditional_Net(**conditional_net_config)
+        self.conditional_net.initialize(nn.init.kaiming_normal_)
         self.num_layers = num_layers
     
     def forward(self, initial_arm_solutions, car_x, car_y, c, permute_seed):
@@ -113,7 +129,7 @@ class Normalizing_Flow_Net(nn.Module):
             arm_solutions, s = c_layer.forward(arm_solutions, car_x, car_y, c)
 
             # derivative of f wrt to x. only s remains.
-            log_det_jacobian += torch.sum(torch.log(torch.abs(s)))
+            log_det_jacobian += torch.mean(torch.log(torch.abs(s)))
 
             # permute the solutions
             p_layer = Permute_Layer(arm_solutions, permute_seed)
@@ -123,13 +139,11 @@ class Normalizing_Flow_Net(nn.Module):
     
     def ikflow_loss(self, og_sampled_arm, log_det_jacobian):
         # compute -log(P_z(z))
-        z_l2_norm = 0.0
-        for i in og_sampled_arm:
-            z_l2_norm += i ** 2
-        z_l2_norm = torch.sqrt(torch.tensor(z_l2_norm))
+        z_l2_norm = torch.sum(torch.tensor(og_sampled_arm ** 2))
         arm_dim = len(og_sampled_arm)
         log_pz = arm_dim * torch.log(torch.tensor(2*torch.pi)) + z_l2_norm
-        return -0.5 * (log_pz - log_det_jacobian)
+
+        return -0.5 * log_pz - log_det_jacobian
 
     def train(self, arm_dim, data, num_iters, learning_rate, c_seed, permute_seed):
         optimizer = optim.RAdam(self.conditional_net.parameters(), lr=learning_rate)
@@ -148,10 +162,11 @@ class Normalizing_Flow_Net(nn.Module):
                                                                   permute_seed=permute_seed)
                 
                 # compute loss and backpropagate
-                single_loss = self.ikflow_loss(modified_arm, log_det_jacobian)
+                single_loss = -self.ikflow_loss(modified_arm, log_det_jacobian)
+
                 optimizer.zero_grad()
                 single_loss.backward()
                 optimizer.step()
 
                 epoch_loss += single_loss.item()
-            print(f"epoch: {epoch}, loss: {epoch_loss/len(data)}")
+            print(f"epoch: {epoch}, loss: {epoch_loss/(len(data))}")

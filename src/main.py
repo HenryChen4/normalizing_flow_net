@@ -48,7 +48,7 @@ def generate_data(arm_dim, num_rows, random_sample_seed):
     data = []
     for i in range(num_rows):
         arm_solution = sample_arm_input(arm_dim=arm_dim, 
-                                        seed=random_sample_seed)
+                                        seed=random_sample_seed+i)
         car_x, car_y = get_cartesian(arm_solution)
         data.append((arm_solution, car_x, car_y))
     return data
@@ -118,7 +118,7 @@ target_cartesian = np.array((3, 4))
 
 num_coupling_layers = 20
 
-num_data = 3000
+num_data = 300
 num_iters = 1000
 learning_rate = 5e-4
 
@@ -131,7 +131,6 @@ c_seed = 413234
 data = generate_data(arm_dim=arm_dim,
                      num_rows=num_data,
                      random_sample_seed=arm_gen_seed)
-
 # model configs
 conditional_net_config = {
     "layer_specs": [(arm_dim//2 + 3, 128),
