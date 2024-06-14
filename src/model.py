@@ -139,7 +139,7 @@ class Normalizing_Flow_Net(nn.Module):
             rng = np.random.default_rng(c_seed + epoch)
             c = rng.uniform(0, 1)
             v = rng.normal(0, c, size=arm_dim)
-            for i, (og_sampled_arm, car_x, car_y) in enumerate(data):
+            for i, (og_sampled_arm, car_x, car_y) in enumerate(tqdm(data)):
                 modified_arm = og_sampled_arm + v
                 new_arm_solution, log_det_jacobian = self.forward(initial_arm_solutions=modified_arm,
                                                                   car_x=car_x,
