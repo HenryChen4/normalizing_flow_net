@@ -170,3 +170,6 @@ class Normalizing_Flow_Net(nn.Module):
 
                 epoch_loss += single_loss.item()
             print(f"epoch: {epoch}, loss: {epoch_loss/(len(data))}")
+
+# TODO: Look into what the softflow thing does and exactly what the scaling means.
+# TODO: Set up a test function to generate multiple solutions

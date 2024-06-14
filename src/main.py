@@ -118,9 +118,9 @@ target_cartesian = np.array((3, 4))
 
 num_coupling_layers = 20
 
-num_data = 300
-num_iters = 1000
-learning_rate = 5e-4
+num_data = 30000
+num_iters = 10000
+learning_rate = 3e-4
 
 # seeds
 arm_gen_seed = 413
@@ -149,5 +149,15 @@ normalizing_flow_net.train(arm_dim=arm_dim,
                            learning_rate=learning_rate,
                            c_seed=c_seed,
                            permute_seed=permute_seed)
+
+init_arm_soln = sample_arm_input(arm_dim, 4814)
+
+arm_soln = normalizing_flow_net(init_arm_soln, 5, 4, rng.uniform(0, 1), 1454)
+
+fig, ax = plt.subplots(figsize=(8, 8))
+
+visualize(arm_soln[0].detach().numpy(), np.repeat(1, arm_dim), 10, ax)
+
+plt.show()
 
 """END of training"""
