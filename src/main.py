@@ -118,7 +118,7 @@ target_cartesian = np.array((3, 4))
 
 num_coupling_layers = 20
 
-num_data = 30000
+num_data = 3000
 num_iters = 1000
 learning_rate = 5e-4
 
