@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tqdm import tqdm, trange
 
 class Conditional_Net(nn.Module):
     def __init__(self, layer_specs, activation):
@@ -132,7 +133,7 @@ class Normalizing_Flow_Net(nn.Module):
 
     def train(self, arm_dim, data, num_iters, learning_rate, c_seed, permute_seed):
         optimizer = optim.RAdam(self.conditional_net.parameters(), lr=learning_rate)
-        for epoch in range(num_iters):
+        for epoch in trange(num_iters):
             epoch_loss = 0.0
             # making sure to generate new c each epoch
             rng = np.random.default_rng(c_seed + epoch)
