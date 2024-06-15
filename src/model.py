@@ -6,6 +6,7 @@ from ranger_adabelief import RangerAdaBelief as Ranger
 from tqdm import tqdm, trange
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
 
 class Conditional_Net(nn.Module):
     def __init__(self, layer_specs, activation):
