@@ -10,7 +10,7 @@ from visualize import visualize
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 1000
+num_train_samples = 2.5e6
 
 # seeds
 train_sample_gen_seed = 41895
@@ -20,7 +20,7 @@ permute_seed = 415523
 # global (hyper) params ??
 num_coupling_layers = 20
 noise_scale = 1e-3
-num_iters = 100
+num_iters = 1000
 learning_rate = 5e-5
 
 # sampling dataset
