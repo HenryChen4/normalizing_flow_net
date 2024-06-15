@@ -10,7 +10,7 @@ from visualize import visualize
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 2.5e6
+num_train_samples = 2500000
 
 # seeds
 train_sample_gen_seed = 41895
