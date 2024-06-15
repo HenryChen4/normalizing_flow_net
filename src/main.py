@@ -43,7 +43,7 @@ normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_n
                                             num_layers=num_coupling_layers)
 
 normalizing_flow_net.train(arm_dim=arm_dim,
-                           data=training_data,
+                           data=training_data.to("cuda"),
                            num_iters=num_iters,
                            learning_rate=learning_rate,
                            c_seed=c_seed,
