@@ -66,7 +66,6 @@ class Coupling_Layer:
             s (torch.tensor): Scaling factor.
             t (torch.tensor): Translation factor.
         """
-        in_arm_poses = in_arm_poses.to(device)
         in_cartesian_pose = torch.squeeze(in_cartesian_pose).to(device)
         c = c.unsqueeze(dim=0).to(device)
         conditional_input = torch.cat((in_arm_poses, in_cartesian_pose, c), dim=-1)
@@ -93,8 +92,8 @@ class Coupling_Layer:
             s (torch.float64): Scaling factor.
         """
         d = arm_solution.shape[0]
-        const_arm_soln = arm_solution[0:d//2]
-        altered_arm_soln = arm_solution[d//2:d]
+        const_arm_soln = arm_solution[0:d//2].to(device)
+        altered_arm_soln = arm_solution[d//2:d].to(device)
 
         car_pose = torch.tensor([car_x, car_y], dtype=torch.float64).to(device)
         c = torch.tensor(c, dtype=torch.float64).to(device)
