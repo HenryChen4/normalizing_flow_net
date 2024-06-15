@@ -2,7 +2,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from ranger_adabelief import RangerAdaBelief as Ranger
 from tqdm import tqdm, trange
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Conditional_Net(nn.Module):
     def __init__(self, layer_specs, activation):
@@ -37,7 +40,9 @@ class Conditional_Net(nn.Module):
     
 class Coupling_Layer:
     """Transforms sampled arm solution through an affine
-    normalizing flow into a new arm solution.
+    normalizing flow into a new arm solution. Make sure every 
+    input to every function is a float64 for higher precision and 
+    less instability.
 
     Implemented as described in: "https://arxiv.org/pdf/2111.08933"
 
@@ -46,8 +51,9 @@ class Coupling_Layer:
         for retrieving scaling (s) and transformation (t) 
         values.
     """
-    def __init__(self, conditional_net):
+    def __init__(self, conditional_net, noise_scale):
         self.conditional_net = conditional_net
+        self.noise_scale = noise_scale
 
     def get_s_t(self, in_arm_poses, in_cartesian_pose, c):
         """Performs affine flow calculations.
@@ -57,14 +63,21 @@ class Coupling_Layer:
             in_cartesian_pose (torch.tensor): Input cartesian poses.
             c (torch.tensor): Input c.
         Returns:
-            s (torch.float32): Scaling factor.
-            t (torch.float32): Translation factor.
+            s (torch.tensor): Scaling factor.
+            t (torch.tensor): Translation factor.
         """
         in_cartesian_pose = torch.squeeze(in_cartesian_pose)
-        c = c.unsqueeze(dim=0)
-        conditional_input = torch.cat((in_arm_poses, in_cartesian_pose, c), dim=-1)
+        c = c.unsqueeze(dim=0).to(device)
+        conditional_input = torch.cat((in_arm_poses, in_cartesian_pose, c), dim=-1).to(device)
+        
+        # adding softflow noise
+        noise = torch.randn_like(conditional_input) * self.noise_scale
+        noise = noise.double().to(device)
+        conditional_input += noise
+
         layer_out = self.conditional_net(conditional_input)
         s, t = layer_out.chunk(2, dim=-1)
+
         return s, t
 
     def forward(self, arm_solution, car_x, car_y, c):
@@ -76,14 +89,14 @@ class Coupling_Layer:
             car_y (float): Target cartesian y.
         Returns:
             new_arm_solution (torch.tensor): Transformed arm solution.
-            s (torch.float32): Scaling factor.
+            s (torch.float64): Scaling factor.
         """
         d = arm_solution.shape[0]
         const_arm_soln = arm_solution[0:d//2]
         altered_arm_soln = arm_solution[d//2:d]
 
-        car_pose = torch.tensor([car_x, car_y], dtype=torch.float32)
-        c = torch.tensor(c, dtype=torch.float32)
+        car_pose = torch.tensor([car_x, car_y], dtype=torch.float64).to(device)
+        c = torch.tensor(c, dtype=torch.float64).to(device)
         
         s, t = self.get_s_t(const_arm_soln, car_pose, c)
 
@@ -109,23 +122,26 @@ class Permute_Layer:
             permuted_arm_solution (torch.tensor): Permuted arm solution.
         """
         rng = np.random.default_rng(seed=self.seed)
-        permuted = rng.permutation(self.arm_soln.detach().numpy())
+        permuted = rng.permutation(self.arm_soln.cpu().detach().numpy())
         return torch.tensor(permuted, dtype=torch.float32)
     
 class Normalizing_Flow_Net(nn.Module):
-    def __init__(self, conditional_net_config, num_layers):
+    def __init__(self, conditional_net_config, noise_scale, num_layers):
         super().__init__()
-        self.conditional_net = Conditional_Net(**conditional_net_config)
+        self.conditional_net = Conditional_Net(**conditional_net_config).to(device)
         self.conditional_net.initialize(nn.init.kaiming_normal_)
+        self.noise_scale = noise_scale
         self.num_layers = num_layers
+        # convert weights to float64
+        self.double()
     
-    def forward(self, initial_arm_solutions, car_x, car_y, c, permute_seed):
-        arm_solutions = torch.tensor(initial_arm_solutions, dtype=torch.float32)
+    def forward(self, arm_solutions, car_x, car_y, c, permute_seed):
         log_det_jacobian = 0.0
 
         for i in range(self.num_layers):
             # first feed through coupling
-            c_layer = Coupling_Layer(self.conditional_net)
+            c_layer = Coupling_Layer(self.conditional_net, self.noise_scale)
+
             arm_solutions, s = c_layer.forward(arm_solutions, car_x, car_y, c)
 
             # derivative of f wrt to x. only s remains.
@@ -139,23 +155,27 @@ class Normalizing_Flow_Net(nn.Module):
     
     def ikflow_loss(self, og_sampled_arm, log_det_jacobian):
         # compute -log(P_z(z))
-        z_l2_norm = torch.sum(torch.tensor(og_sampled_arm ** 2))
+        z_l2_norm = torch.sum(og_sampled_arm ** 2)
         arm_dim = len(og_sampled_arm)
-        log_pz = arm_dim * torch.log(torch.tensor(2*torch.pi)) + z_l2_norm
+        log_pz = arm_dim * torch.log(torch.tensor(2*torch.pi, device=device)) + z_l2_norm
 
-        return -0.5 * log_pz - log_det_jacobian
+        loss = -0.5 * log_pz - log_det_jacobian
+
+        return loss
 
     def train(self, arm_dim, data, num_iters, learning_rate, c_seed, permute_seed):
-        optimizer = optim.RAdam(self.conditional_net.parameters(), lr=learning_rate)
+        optimizer = Ranger(self.conditional_net.parameters(), lr=learning_rate)
+
         for epoch in trange(num_iters):
             epoch_loss = 0.0
             # making sure to generate new c each epoch
             rng = np.random.default_rng(c_seed + epoch)
             c = rng.uniform(0, 1)
-            v = rng.normal(0, c, size=arm_dim)
+            v = torch.tensor(rng.normal(0, c, size=arm_dim), dtype=torch.float64)
             for i, (og_sampled_arm, car_x, car_y) in enumerate(tqdm(data)):
+                og_sampled_arm = og_sampled_arm.to(device)
                 modified_arm = og_sampled_arm + v
-                new_arm_solution, log_det_jacobian = self.forward(initial_arm_solutions=modified_arm,
+                new_arm_solution, log_det_jacobian = self.forward(arm_solutions=modified_arm,
                                                                   car_x=car_x,
                                                                   car_y=car_y,
                                                                   c=c,
@@ -171,5 +191,4 @@ class Normalizing_Flow_Net(nn.Module):
                 epoch_loss += single_loss.item()
             print(f"epoch: {epoch}, loss: {epoch_loss/(len(data))}")
 
-# TODO: Look into what the softflow thing does and exactly what the scaling means.
-# TODO: Set up a test function to generate multiple solutions
+#TODO rewrite code to support data batching
