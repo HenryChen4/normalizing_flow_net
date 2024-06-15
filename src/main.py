@@ -10,7 +10,7 @@ from visualize import visualize
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 2500000
+num_train_samples = 300
 
 # seeds
 train_sample_gen_seed = 41895
@@ -19,9 +19,9 @@ permute_seed = 415523
 
 # global (hyper) params ??
 num_coupling_layers = 20
-noise_scale = 1e-3
+noise_scale = 1e-5
 num_iters = 1000
-learning_rate = 5e-5
+learning_rate = 5e-4
 
 # sampling dataset
 training_data = generate_data(arm_dim=arm_dim,
@@ -43,7 +43,7 @@ normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_n
                                             num_layers=num_coupling_layers)
 
 normalizing_flow_net.train(arm_dim=arm_dim,
-                           data=training_data.to("cuda"),
+                           data=training_data,
                            num_iters=num_iters,
                            learning_rate=learning_rate,
                            c_seed=c_seed,
