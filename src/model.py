@@ -171,7 +171,7 @@ class Normalizing_Flow_Net(nn.Module):
             # making sure to generate new c each epoch
             rng = np.random.default_rng(c_seed + epoch)
             c = rng.uniform(0, 1)
-            v = torch.tensor(rng.normal(0, c, size=arm_dim), dtype=torch.float64)
+            v = torch.tensor(rng.normal(0, c, size=arm_dim), dtype=torch.float64).to(device)
             for i, (og_sampled_arm, car_x, car_y) in enumerate(tqdm(data)):
                 og_sampled_arm = og_sampled_arm.to(device)
                 modified_arm = og_sampled_arm + v
