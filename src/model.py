@@ -66,7 +66,8 @@ class Coupling_Layer:
             s (torch.tensor): Scaling factor.
             t (torch.tensor): Translation factor.
         """
-        in_cartesian_pose = torch.squeeze(in_cartesian_pose)
+        in_arm_poses = in_arm_poses.to(device)
+        in_cartesian_pose = torch.squeeze(in_cartesian_pose).to(device)
         c = c.unsqueeze(dim=0).to(device)
         conditional_input = torch.cat((in_arm_poses, in_cartesian_pose, c), dim=-1)
         
