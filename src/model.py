@@ -68,7 +68,7 @@ class Coupling_Layer:
         """
         in_cartesian_pose = torch.squeeze(in_cartesian_pose)
         c = c.unsqueeze(dim=0).to(device)
-        conditional_input = torch.cat((in_arm_poses, in_cartesian_pose, c), dim=-1).to(device)
+        conditional_input = torch.cat((in_arm_poses, in_cartesian_pose, c), dim=-1)
         
         # adding softflow noise
         noise = torch.randn_like(conditional_input) * self.noise_scale
