@@ -10,7 +10,11 @@ from visualize import visualize
 
 # data generation vars
 arm_dim = 10
+<<<<<<< HEAD
 num_train_samples = 200
+=======
+num_train_samples = 300
+>>>>>>> eb9e0c0c18b7ea0265f75f0319695b5ab8de779b
 
 # seeds
 train_sample_gen_seed = 41895
@@ -19,9 +23,13 @@ permute_seed = 415523
 
 # global (hyper) params ??
 num_coupling_layers = 20
-noise_scale = 1e-3
+noise_scale = 1e-5
 num_iters = 1000
+<<<<<<< HEAD
 learning_rate = 1e-7
+=======
+learning_rate = 5e-4
+>>>>>>> eb9e0c0c18b7ea0265f75f0319695b5ab8de779b
 
 # sampling dataset
 training_data = generate_data(arm_dim=arm_dim,
@@ -42,7 +50,11 @@ normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_n
                                             noise_scale=noise_scale,
                                             num_layers=num_coupling_layers)
 
+<<<<<<< HEAD
 normalizing_flow_net.train(arm_dim=arm_dim, 
+=======
+normalizing_flow_net.train(arm_dim=arm_dim,
+>>>>>>> eb9e0c0c18b7ea0265f75f0319695b5ab8de779b
                            data=training_data,
                            num_iters=num_iters,
                            learning_rate=learning_rate,

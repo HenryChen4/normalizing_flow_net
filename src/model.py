@@ -148,7 +148,7 @@ class Normalizing_Flow_Net(nn.Module):
             arm_solutions, s = c_layer.forward(arm_solutions, car_x, car_y, c)
 
             # derivative of f wrt to x. only s remains.
-            log_det_jacobian += torch.mean(torch.log(torch.abs(s)))
+            log_det_jacobian += torch.mean(torch.log(torch.abs(s) + 1e-9))
 
             # permute the solutions
             p_layer = Permute_Layer(arm_solutions, permute_seed)
