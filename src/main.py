@@ -18,9 +18,9 @@ c_seed = 1345135
 permute_seed = 415523
 
 # global (hyper) params ??
-num_coupling_layers = 20
-noise_scale = 1e-5
-num_iters = 1000
+num_coupling_layers = 5
+noise_scale = 1e-3
+num_iters = 10
 learning_rate = 5e-4
 
 # sampling dataset
@@ -42,9 +42,13 @@ normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_n
                                             noise_scale=noise_scale,
                                             num_layers=num_coupling_layers)
 
-normalizing_flow_net.train(arm_dim=arm_dim,
-                           data=training_data,
-                           num_iters=num_iters,
-                           learning_rate=learning_rate,
-                           c_seed=c_seed,
-                           permute_seed=permute_seed)
+all_loss = normalizing_flow_net.train(arm_dim=arm_dim,
+                                      data=training_data,
+                                      num_iters=num_iters,
+                                      learning_rate=learning_rate,
+                                      c_seed=c_seed,
+                                      permute_seed=permute_seed)
+                        
+plt.plot(np.arange(num_iters), all_loss)
+plt.savefig("loss.png")
+plt.show()
