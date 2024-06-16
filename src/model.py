@@ -78,6 +78,9 @@ class Coupling_Layer:
         layer_out = self.conditional_net(conditional_input)
         s, t = layer_out.chunk(2, dim=-1)
 
+        s = torch.clamp(s, min=-10, max=10)
+        t = torch.clamp(t, min=-10, max=10)
+
         return s, t
 
     def forward(self, arm_solution, car_x, car_y, c):
@@ -161,10 +164,16 @@ class Normalizing_Flow_Net(nn.Module):
 
         loss = -0.5 * log_pz - log_det_jacobian
 
+        # if loss is torch.nan or loss < 0:
+        #     print(f"z_l2: {z_l2_norm}")
+        #     print(f"log_pz: {log_pz}")
+        #     print(f"log_det_jac: {log_det_jacobian}")
+
         return loss
 
     def train(self, arm_dim, data, num_iters, learning_rate, c_seed, permute_seed):
         optimizer = Ranger(self.conditional_net.parameters(), lr=learning_rate)
+        # optimizer = optim.SGD(self.conditional_net.parameters(), lr=learning_rate)
 
         for epoch in trange(num_iters):
             epoch_loss = 0.0
