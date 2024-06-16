@@ -151,7 +151,7 @@ class Normalizing_Flow_Net(nn.Module):
             log_det_jacobian += torch.mean(torch.log(torch.abs(s) + 1e-9))
 
             # permute the solutions
-            p_layer = Permute_Layer(arm_solutions, permute_seed)
+            p_layer = Permute_Layer(arm_solutions, permute_seed + i)
             arm_solutions = p_layer.forward()
 
         return arm_solutions, log_det_jacobian
@@ -171,9 +171,18 @@ class Normalizing_Flow_Net(nn.Module):
 
         return loss
 
-    def train(self, arm_dim, data, num_iters, learning_rate, c_seed, permute_seed):
-        optimizer = Ranger(self.conditional_net.parameters(), lr=learning_rate)
+    def train(self, 
+              arm_dim, 
+              data, 
+              num_iters, 
+              optimizer, 
+              learning_rate, 
+              c_seed,
+              permute_seed):
+        # optimizer = Ranger(self.conditional_net.parameters(), lr=learning_rate)
         # optimizer = optim.SGD(self.conditional_net.parameters(), lr=learning_rate)
+
+        optimizer = optimizer(self.conditional_net.parameters(), lr=learning_rate)
         
         all_loss = []
 
@@ -204,5 +213,4 @@ class Normalizing_Flow_Net(nn.Module):
             all_loss.append(epoch_loss/(len(data)))
         
         return all_loss
-
-#TODO rewrite code to support data batching
+    
