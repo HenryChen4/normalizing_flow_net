@@ -58,9 +58,9 @@ model_configs = {
     #     "activation": nn.LeakyReLU,
     # },
     "smallest": {
-        "layer_specs": [(arm_dim//2 + 3, 8),
-                        (8, 8),
-                        (8, arm_dim)],
+        "layer_specs": [(arm_dim//2 + 3, 1024),
+                        (1024, 1024),
+                        (1024, arm_dim)],
         "activation": nn.LeakyReLU,
     },
 }
@@ -74,7 +74,7 @@ optimizers = {
 
 # different hyperparameters
 learning_rates = [1e-5, 5e-6, 1e-6, 5e-7]
-num_coupling_layers = [3, 6, 9, 12]
+num_coupling_layers = [12, 6, 9, 12]
 noise_scales = [1e-3, 1e-5, 1e-7]
 
 # main experiment loop
