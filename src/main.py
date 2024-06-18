@@ -16,8 +16,8 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 2
-batch_size = 1
+num_train_samples = 32000
+batch_size = 64
 
 # seeds
 train_sample_gen_seed = 41895
@@ -33,7 +33,7 @@ data_loader = load_data(data=training_data,
                         batch_size=batch_size)
 
 # different hyperparameters
-num_iters = 2
+num_iters = 1000
 learning_rate = 5e-7
 num_coupling_layers = 6
 noise_scale = 1e-2
@@ -63,7 +63,7 @@ all_epoch_loss, all_batch_loss, all_mean_dist = normalizing_flow_net.train(arm_d
 all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
 
 # save results
-save_dir = f"results/result3"
+save_dir = f"results/result4"
 os.makedirs(save_dir, exist_ok=True)
 epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss.png')
 batch_loss_save_path = os.path.join(save_dir, 'batch_loss.png')
