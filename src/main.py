@@ -36,7 +36,7 @@ data_loader = load_data(data=training_data,
 num_iters = 1000
 learning_rate = 5e-7
 num_coupling_layers = 6
-noise_scale = 1e-2
+noise_scale = [0.25, 1e-2]
 
 # model creation
 conditional_net_config = {
@@ -46,43 +46,45 @@ conditional_net_config = {
     "activation": nn.LeakyReLU,
 }
 
-normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
-                                            noise_scale=noise_scale,
-                                            num_layers=num_coupling_layers)
+# main experiment loop
+for i, ns in enumerate(noise_scale):
+    normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
+                                                noise_scale=ns,
+                                                num_layers=num_coupling_layers)
 
-# model training
-all_epoch_loss, all_batch_loss, all_mean_dist = normalizing_flow_net.train(arm_dim=arm_dim,
-                                                                        data_loader=data_loader,
-                                                                        num_iters=num_iters,
-                                                                        optimizer=Ranger,
-                                                                        learning_rate=learning_rate,
-                                                                        batch_size=batch_size,
-                                                                        c_seed=c_seed,
-                                                                        permute_seed=PERMUTE_SEED)
+    # model training
+    all_epoch_loss, all_batch_loss, all_mean_dist = normalizing_flow_net.train(arm_dim=arm_dim,
+                                                                            data_loader=data_loader,
+                                                                            num_iters=num_iters,
+                                                                            optimizer=Ranger,
+                                                                            learning_rate=learning_rate,
+                                                                            batch_size=batch_size,
+                                                                            c_seed=c_seed,
+                                                                            permute_seed=PERMUTE_SEED)
 
-all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
+    all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
 
-# save results
-save_dir = f"results/result4"
-os.makedirs(save_dir, exist_ok=True)
-epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss.png')
-batch_loss_save_path = os.path.join(save_dir, 'batch_loss.png')
-dist_save_path = os.path.join(save_dir, 'mean_dist.png')
-model_save_path = os.path.join(save_dir, 'model.pth')
+    # save results
+    save_dir = f"results/result{4+i}"
+    os.makedirs(save_dir, exist_ok=True)
+    epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss.png')
+    batch_loss_save_path = os.path.join(save_dir, 'batch_loss.png')
+    dist_save_path = os.path.join(save_dir, 'mean_dist.png')
+    model_save_path = os.path.join(save_dir, 'model.pth')
 
-plt.plot(np.arange(num_iters), all_epoch_loss)
-plt.savefig(epoch_loss_save_path)
-plt.show()
+    plt.plot(np.arange(num_iters), all_epoch_loss)
+    plt.savefig(epoch_loss_save_path)
+    plt.show()
 
-plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_batch_loss)
-plt.savefig(batch_loss_save_path)
-plt.show()
+    plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_batch_loss)
+    plt.savefig(batch_loss_save_path)
+    plt.show()
 
-plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_mean_dist)
-plt.savefig(dist_save_path)
-plt.show()
+    plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_mean_dist)
+    plt.savefig(dist_save_path)
+    plt.show()
 
-torch.save(normalizing_flow_net, model_save_path)
+    torch.save(normalizing_flow_net, model_save_path)
 
 # """START of comparing trained vs untrained models"""
 
