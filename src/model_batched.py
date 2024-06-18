@@ -154,7 +154,7 @@ class Normalizing_Flow_Net(nn.Module):
                 permute_seed,
                 epsilon=1e-9):
         batch_size = len(arm_poses)
-        log_det_jacobian = torch.zeros((batch_size, 1), dtype=torch.float64)
+        log_det_jacobian = torch.zeros((batch_size, 1), dtype=torch.float64).to(device)
         for i in range(self.num_layers):
             # first feed through coupling
             c_layer = Coupling_Layer(self.conditional_net, self.noise_scale)
@@ -164,7 +164,7 @@ class Normalizing_Flow_Net(nn.Module):
                                              c=c)
             
             # derivative of f wrt to x. only s remains.
-            log_det_jacobian += torch.mean(torch.log(torch.abs(s) + epsilon), dim=1).unsqueeze(dim=1)
+            log_det_jacobian += torch.mean(torch.log(torch.abs(s.to(device)) + epsilon), dim=1).unsqueeze(dim=1).to(device)
 
             # permute the solutions
             p_layer = Permute_Layer(arm_poses=arm_poses,
