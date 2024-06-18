@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from ranger_adabelief import RangerAdaBelief as Ranger
 from tqdm import tqdm, trange
+from model_loading import get_cartesian_batched
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -195,8 +196,10 @@ class Normalizing_Flow_Net(nn.Module):
         optimizer = optimizer(self.conditional_net.parameters(), lr=learning_rate)
         all_epoch_loss = []
         all_batch_loss = []
+        all_mean_dist = []
         for epoch in trange(num_iters):
             epoch_loss = 0.0
+            mean_dist = 0.0
             # making sure to generate new c each epoch
             rng = np.random.default_rng(c_seed + epoch)
             c = torch.tensor(rng.uniform(0, 1), dtype=torch.float64)
@@ -216,15 +219,22 @@ class Normalizing_Flow_Net(nn.Module):
                                                 log_det_jacobian=log_det_jacobian)
                 
                 batch_loss = torch.mean(single_loss)
-                all_batch_loss.append(batch_loss)
+                all_batch_loss.append(batch_loss.item())
                 
                 optimizer.zero_grad()
                 batch_loss.backward()
                 optimizer.step()
 
                 epoch_loss += batch_loss.item()
-            print(f"epoch: {epoch}, loss: {epoch_loss/(len(data_loader))}")
+
+                # compute euclidean distance between sampled and target cartesian positions
+                # averaged over batch size
+                sampled_cart_poses = torch.tensor(get_cartesian_batched(new_arm_poses.detach().numpy()),
+                                                  dtype=torch.float64)
+                all_mean_dist.append((sampled_cart_poses - cart_poses).pow(2).sum().sqrt().mean())
+                        
+            print(f"epoch: {epoch}, loss: {epoch_loss/(len(data_loader))}, avg_mean_dist: {mean_dist/len(data_loader)}")
             all_epoch_loss.append(epoch_loss/len(data_loader))
 
-        return all_epoch_loss, all_batch_loss
+        return all_epoch_loss, all_batch_loss, all_mean_dist
             

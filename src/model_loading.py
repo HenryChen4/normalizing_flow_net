@@ -30,6 +30,12 @@ def get_cartesian(arm_pos):
         y_final += np.sin(theta_sum)
     return torch.tensor((x_final, y_final), dtype=torch.float64)
 
+def get_cartesian_batched(arm_poses):
+    all_arm_poses = []
+    for arm_pose in arm_poses:
+        all_arm_poses.append(get_cartesian(arm_pose))
+    return torch.stack(all_arm_poses)     
+
 def generate_data(arm_dim, num_rows, random_sample_seed):
     """Generates training data for neural net.
 

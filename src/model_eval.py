@@ -31,7 +31,7 @@ def evaluate_seeds(base_seed, num_seeds, permute_seed):
     # load the model
     arm_dim = 10
 
-    save_dir = f"results/"
+    save_dir = f"results/result2"
     os.makedirs(save_dir, exist_ok=True)
     model_save_path = os.path.join(save_dir, 'model.pth')
 

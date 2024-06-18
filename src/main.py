@@ -16,15 +16,15 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 30080
+num_train_samples = 64000
 batch_size = 128
 
 # seeds
 train_sample_gen_seed = 41895
 c_seed = 1345135
-permute_seed = 415523
+PERMUTE_SEED = 415523 # constant for both training and testing
 
-# sampling dataset
+# sampling and loading dataset
 training_data = generate_data(arm_dim=arm_dim,
                               num_rows=num_train_samples,
                               random_sample_seed=train_sample_gen_seed)
@@ -32,9 +32,13 @@ training_data = generate_data(arm_dim=arm_dim,
 data_loader = load_data(data=training_data,
                         batch_size=batch_size)
 
+# different hyperparameters
 num_iters = 1000
+learning_rate = 1e-7
+num_coupling_layers = 12
+noise_scale = 1e-5
 
-# different model configs
+# model creation
 conditional_net_config = {
     "layer_specs": [(arm_dim//2 + 3, 1024),
                     (1024, 1024),
@@ -42,41 +46,41 @@ conditional_net_config = {
     "activation": nn.LeakyReLU,
 }
 
-# different optimizers
-optimizers = {
-    "ranger": Ranger,
-    "adam": optim.Adam,
-    "sgd": optim.SGD,
-}
-
-# different hyperparameters
-learning_rates = [1e-5, 5e-6, 1e-6, 5e-7]
-num_coupling_layers = [12, 6, 9, 12]
-noise_scales = [1e-3, 1e-5, 1e-7]
-
-# main experiment loop
 normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
-                                            noise_scale=1e-5,
-                                            num_layers=6)
+                                            noise_scale=noise_scale,
+                                            num_layers=num_coupling_layers)
 
-all_epoch_loss, all_batch_loss = normalizing_flow_net.train(arm_dim=arm_dim,
-                                                            data_loader=data_loader,
-                                                            num_iters=num_iters,
-                                                            optimizer=optimizers["ranger"],
-                                                            learning_rate=2.5e-7,
-                                                            batch_size=batch_size,
-                                                            c_seed=c_seed,
-                                                            permute_seed=permute_seed)
+# model training
+all_epoch_loss, all_batch_loss, all_mean_dist = normalizing_flow_net.train(arm_dim=arm_dim,
+                                                                        data_loader=data_loader,
+                                                                        num_iters=num_iters,
+                                                                        optimizer=Ranger,
+                                                                        learning_rate=learning_rate,
+                                                                        batch_size=batch_size,
+                                                                        c_seed=c_seed,
+                                                                        permute_seed=PERMUTE_SEED)
 
-# save_dir = f"results/result2"
-# os.makedirs(save_dir, exist_ok=True)
-# loss_save_path = os.path.join(save_dir, 'loss.png')
-# model_save_path = os.path.join(save_dir, 'model.pth')
+# save results
+save_dir = f"results/result2"
+os.makedirs(save_dir, exist_ok=True)
+epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss.png')
+batch_loss_save_path = os.path.join(save_dir, 'batch_loss.png')
+dist_save_path = os.path.join(save_dir, 'mean_dist.png')
+model_save_path = os.path.join(save_dir, 'model.pth')
 
-# plt.plot(np.arange(num_iters), all_epoch_loss)
-# plt.savefig(loss_save_path)
-# plt.show()
-# torch.save(normalizing_flow_net, model_save_path)
+plt.plot(np.arange(num_iters), all_epoch_loss)
+plt.savefig(epoch_loss_save_path)
+plt.show()
+
+plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_batch_loss)
+plt.savefig(batch_loss_save_path)
+plt.show()
+
+plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_mean_dist)
+plt.savefig(dist_save_path)
+plt.show()
+
+torch.save(normalizing_flow_net, model_save_path)
 
 """START of comparing trained vs untrained models"""
 
