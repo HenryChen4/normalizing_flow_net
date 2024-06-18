@@ -1,7 +1,7 @@
 import os
 import torch.nn as nn
 import torch
-from model_loading import generate_data, get_cartesian
+from model_loading import generate_data, get_cartesian, load_data
 
 from tqdm import tqdm, trange
 
@@ -9,10 +9,12 @@ def load_model(model_save_path):
     model = torch.load(model_save_path, map_location=torch.device("cpu"))
     return model
 
-def evaluate(test_data, model, permute_seed):
+def evaluate(test_data, model, permute_seed, batch_size):
+    test_loader = load_data(test_data, batch_size)
+
     mean_dist = 0.0
 
-    for i, (sampled_arm, target_car_x, target_car_y) in enumerate(tqdm(test_data)):
+    for i, (sampled_arm, target_car_x, target_car_y) in enumerate(tqdm(test_loader)):
         # c set to 0 for testing
         new_arm_sol, _ = model.forward(arm_solutions=sampled_arm,
                                     car_x=target_car_x,
@@ -31,7 +33,7 @@ def evaluate_seeds(base_seed, num_seeds, num_rows, permute_seed):
     # load the model
     arm_dim = 10
 
-    save_dir = f"results/test"
+    save_dir = f"more_results/result4/"
     os.makedirs(save_dir, exist_ok=True)
     model_save_path = os.path.join(save_dir, 'model.pth')
 
@@ -51,3 +53,5 @@ def evaluate_seeds(base_seed, num_seeds, num_rows, permute_seed):
         all_mean_dist.append(mean_dist)
     
     return all_mean_dist
+
+# TODO: Clean this up and change to loading batches instead of single data

@@ -238,3 +238,4 @@ class Normalizing_Flow_Net(nn.Module):
 
         return all_epoch_loss, all_batch_loss, all_mean_dist
     
+# TODO: Fix mean dist calculations

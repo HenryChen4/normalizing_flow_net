@@ -32,3 +32,5 @@ def visualize(solutions, link_lengths, objective, ax):
         final_label = f"Final: ({pos[0]:.2f}, {pos[1]:.2f})"
         ax.plot(pos[0], pos[1], "go", ms=6, label=final_label)
         ax.legend()
+
+# TODO: Test out printing multiple arms and printing the desired location
