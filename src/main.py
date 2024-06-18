@@ -16,8 +16,8 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 2
-num_train_samples = 2
-batch_size = 1
+num_train_samples = 64000
+batch_size = 64
 
 # seeds
 train_sample_gen_seed = 752851235
@@ -33,7 +33,7 @@ data_loader = load_data(data=training_data,
                         batch_size=batch_size)
 
 # different hyperparameters
-num_iters = 2
+num_iters = 1000
 learning_rate = 1e-6
 num_coupling_layers = 5
 noise_scale = 1e-3
