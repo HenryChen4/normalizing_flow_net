@@ -56,7 +56,6 @@ def generate_data(arm_dim, num_rows, random_sample_seed):
                      car_y.type(torch.float64)))
     return data
 
-# TODO: Code batching in model.py
 class Arm_Dataset(Dataset):
     def __init__(self, x, y):
         self.x = x

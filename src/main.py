@@ -15,14 +15,14 @@ from model_eval import evaluate, evaluate_seeds
 from tqdm import tqdm, trange
 
 # data generation vars
-arm_dim = 10
+arm_dim = 2
 num_train_samples = 32000
 batch_size = 64
 
 # seeds
-train_sample_gen_seed = 41895
-c_seed = 1345135
-PERMUTE_SEED = 415523 # constant for both training and testing
+train_sample_gen_seed = 752851235
+c_seed = 1234125
+PERMUTE_SEED = 95683485 # constant for both training and testing
 
 # sampling and loading dataset
 training_data = generate_data(arm_dim=arm_dim,
@@ -34,9 +34,9 @@ data_loader = load_data(data=training_data,
 
 # different hyperparameters
 num_iters = 1000
-learning_rate = 5e-7
-num_coupling_layers = 6
-noise_scale = [0.25, 1e-2]
+learning_rate = 1e-7
+num_coupling_layers = 5
+noise_scale = 1e-3
 
 # model creation
 conditional_net_config = {
@@ -47,38 +47,31 @@ conditional_net_config = {
 }
 
 # main experiment loop
-# for i, ns in enumerate(noise_scale):
 normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
-                                            noise_scale=0.25,
+                                            noise_scale=noise_scale,
                                             num_layers=num_coupling_layers)
 
 # model training
-all_epoch_loss, all_batch_loss, all_mean_dist = normalizing_flow_net.train(arm_dim=arm_dim,
-                                                                        data_loader=data_loader,
-                                                                        num_iters=num_iters,
-                                                                        optimizer=Ranger,
-                                                                        learning_rate=learning_rate,
-                                                                        batch_size=batch_size,
-                                                                        c_seed=c_seed,
-                                                                        permute_seed=PERMUTE_SEED)
+all_epoch_loss, all_mean_dist = normalizing_flow_net.train(arm_dim=arm_dim,
+                                                           data_loader=data_loader,
+                                                           num_iters=num_iters,
+                                                           optimizer=Ranger,
+                                                           learning_rate=learning_rate,
+                                                           batch_size=batch_size,
+                                                           c_seed=c_seed,
+                                                           permute_seed=PERMUTE_SEED)
 
 all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
 
 # save results
-save_dir = f"results/result{4+i}"
+save_dir = f"results/2d_arm/"
 os.makedirs(save_dir, exist_ok=True)
 epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss.png')
-batch_loss_save_path = os.path.join(save_dir, 'batch_loss.png')
 dist_save_path = os.path.join(save_dir, 'mean_dist.png')
 model_save_path = os.path.join(save_dir, 'model.pth')
 
 plt.plot(np.arange(num_iters), all_epoch_loss)
 plt.savefig(epoch_loss_save_path)
-plt.show()
-plt.clf()
-
-plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_batch_loss)
-plt.savefig(batch_loss_save_path)
 plt.show()
 plt.clf()
 
@@ -88,45 +81,3 @@ plt.show()
 plt.clf()
 
 torch.save(normalizing_flow_net, model_save_path)
-
-"""START of comparing trained vs untrained models"""
-
-base_seed = 5723759
-num_seeds = 1
-num_rows = 100
-
-all_untrained_dist = []
-
-for i in trange(num_seeds):
-    test_data = generate_data(arm_dim=arm_dim,
-                          num_rows=num_rows,
-                          random_sample_seed=245823+i)
-
-    mean_l2_error = evaluate(test_data=test_data,
-                         model=normalizing_flow_net,
-                         permute_seed=PERMUTE_SEED)
-    
-    all_untrained_dist.append(mean_l2_error)
-
-all_trained_dist = evaluate_seeds(base_seed=base_seed,
-                                  num_seeds=num_seeds,
-                                  num_rows=num_rows,
-                                  permute_seed=PERMUTE_SEED)
-
-save_dir = f"results/more_results/eval"
-os.makedirs(save_dir, exist_ok=True)
-test_dist_path = os.path.join(save_dir, 'test_dist3.png')
-
-plt.plot(np.arange(num_seeds), all_untrained_dist, color='blue')
-plt.plot(np.arange(num_seeds), all_trained_dist, color="orange")
-plt.xlabel("seeds")
-plt.ylabel("average dist")
-plt.legend(['untrained dist', 'trained dist'])
-
-
-plt.savefig(test_dist_path)
-plt.show()
-
-"""END of comparing trained vs untrained models"""
-
-# TODO: See if there is a way to wrap everything in a function

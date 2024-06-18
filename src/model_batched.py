@@ -1,8 +1,6 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from ranger_adabelief import RangerAdaBelief as Ranger
 from tqdm import tqdm, trange
 from model_loading import get_cartesian_batched
 
@@ -193,13 +191,27 @@ class Normalizing_Flow_Net(nn.Module):
               batch_size,
               c_seed,
               permute_seed):
+        """Trains instance of normalizing flow network.
+
+        Args:
+            arm_dim (int): Dimension of arm.
+            data_loader (torch.DataLoader): Batched dataloader.
+            num_iters (int): Number of iterations.
+            optimizer (torch.optim): Optimizer used for training.
+            learning_rate (float): Learning rate.
+            batch_size (int): Batch size.
+            c_seed (int): Seed for initial generation of c.
+            permute_seed(int): Seed for initial permutation.
+        Returns:
+            all_epoch_loss (list): Epoch loss acquired over num iters.
+            all_mean_dist (list): Mean dist between sampled points acquired over num iters.
+        """
         optimizer = optimizer(self.conditional_net.parameters(), lr=learning_rate)
         all_epoch_loss = []
-        all_batch_loss = []
         all_mean_dist = []
         for epoch in trange(num_iters):
             epoch_loss = 0.0
-            mean_dist = 0.0
+            epoch_mean_dist = 0.0
             # making sure to generate new c each epoch
             rng = np.random.default_rng(c_seed + epoch)
             c = torch.tensor(rng.uniform(0, 1), dtype=torch.float64)
@@ -219,8 +231,6 @@ class Normalizing_Flow_Net(nn.Module):
                                                 log_det_jacobian=log_det_jacobian)
                 
                 batch_loss = torch.mean(single_loss)
-                all_batch_loss.append(batch_loss.item())
-                
                 optimizer.zero_grad()
                 batch_loss.backward()
                 optimizer.step()
@@ -230,12 +240,13 @@ class Normalizing_Flow_Net(nn.Module):
                 # compute euclidean distance between sampled and target cartesian positions
                 # averaged over batch size
                 sampled_cart_poses = get_cartesian_batched(new_arm_poses.detach().numpy()).to(device)
-                all_mean_dist.append((sampled_cart_poses - cart_poses).pow(2).sum().sqrt().mean())
-                mean_dist += (sampled_cart_poses - cart_poses).pow(2).sum().sqrt().mean()
-                        
-            print(f"epoch: {epoch}, loss: {epoch_loss/(len(data_loader))}, avg_mean_dist: {mean_dist/len(data_loader)}")
+                batch_dist = (sampled_cart_poses - cart_poses).pow(2).sum(dim=1).sqrt()
+                batch_mean_dist = batch_dist.mean()
+
+                epoch_mean_dist += batch_mean_dist
+                
+            print(f"epoch: {epoch}, loss: {epoch_loss/(len(data_loader))}, mean_dist: {epoch_mean_dist/len(data_loader)}")
+            all_mean_dist.append(epoch_mean_dist/len(data_loader))
             all_epoch_loss.append(epoch_loss/len(data_loader))
 
-        return all_epoch_loss, all_batch_loss, all_mean_dist
-    
-# TODO: Fix mean dist calculations
+        return all_epoch_loss, all_mean_dist
