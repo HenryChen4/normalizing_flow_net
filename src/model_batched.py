@@ -74,7 +74,7 @@ class Coupling_Layer:
         
         batch_size = len(in_arm_poses)
         c = c.repeat(batch_size).unsqueeze(dim=1)
-        conditional_input = torch.cat(tensors=(in_arm_poses, in_cartesian_poses, c),
+        conditional_input = torch.cat(tensors=(in_arm_poses.to(device), in_cartesian_poses.to(device), c.to(device)),
                                       dim=1)
 
         # adding softflow noise
