@@ -237,4 +237,4 @@ class Normalizing_Flow_Net(nn.Module):
             all_epoch_loss.append(epoch_loss/len(data_loader))
 
         return all_epoch_loss, all_batch_loss, all_mean_dist
-            
+    
