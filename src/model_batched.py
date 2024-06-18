@@ -222,7 +222,7 @@ class Normalizing_Flow_Net(nn.Module):
                 batch_loss.backward()
                 optimizer.step()
 
-                epoch_loss += batch_loss
+                epoch_loss += batch_loss.item()
             print(f"epoch: {epoch}, loss: {epoch_loss/(len(data_loader))}")
             all_epoch_loss.append(epoch_loss/len(data_loader))
 
