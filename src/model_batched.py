@@ -230,7 +230,7 @@ class Normalizing_Flow_Net(nn.Module):
                 # compute euclidean distance between sampled and target cartesian positions
                 # averaged over batch size
                 sampled_cart_poses = torch.tensor(get_cartesian_batched(new_arm_poses.detach().numpy()),
-                                                  dtype=torch.float64)
+                                                  dtype=torch.float64).to(device)
                 all_mean_dist.append((sampled_cart_poses - cart_poses).pow(2).sum().sqrt().mean())
                         
             print(f"epoch: {epoch}, loss: {epoch_loss/(len(data_loader))}, avg_mean_dist: {mean_dist/len(data_loader)}")
