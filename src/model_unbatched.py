@@ -179,9 +179,6 @@ class Normalizing_Flow_Net(nn.Module):
               learning_rate, 
               c_seed,
               permute_seed):
-        # optimizer = Ranger(self.conditional_net.parameters(), lr=learning_rate)
-        # optimizer = optim.SGD(self.conditional_net.parameters(), lr=learning_rate)
-
         optimizer = optimizer(self.conditional_net.parameters(), lr=learning_rate)
         
         all_loss = []
@@ -213,4 +210,3 @@ class Normalizing_Flow_Net(nn.Module):
             all_loss.append(epoch_loss/(len(data)))
         
         return all_loss
-    

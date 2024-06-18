@@ -64,7 +64,7 @@ class Arm_Dataset(Dataset):
     
 def load_data(data, batch_size):
     x = [item[0] for item in data]
-    y = [(item[1], item[2]) for item in data]
+    y = [torch.cat((item[1].unsqueeze(dim=0), item[2].unsqueeze(dim=0))) for item in data]
     
     dataset = Arm_Dataset(x, y)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
