@@ -68,15 +68,15 @@ all_epoch_loss, all_batch_loss = normalizing_flow_net.train(arm_dim=arm_dim,
                                                             c_seed=c_seed,
                                                             permute_seed=permute_seed)
 
-save_dir = f"results/result2"
-os.makedirs(save_dir, exist_ok=True)
-loss_save_path = os.path.join(save_dir, 'loss.png')
-model_save_path = os.path.join(save_dir, 'model.pth')
+# save_dir = f"results/result2"
+# os.makedirs(save_dir, exist_ok=True)
+# loss_save_path = os.path.join(save_dir, 'loss.png')
+# model_save_path = os.path.join(save_dir, 'model.pth')
 
-plt.plot(np.arange(num_iters), all_epoch_loss)
-plt.savefig(loss_save_path)
-plt.show()
-torch.save(normalizing_flow_net, model_save_path)
+# plt.plot(np.arange(num_iters), all_epoch_loss)
+# plt.savefig(loss_save_path)
+# plt.show()
+# torch.save(normalizing_flow_net, model_save_path)
 
 """START of comparing trained vs untrained models"""
 

@@ -199,8 +199,8 @@ class Normalizing_Flow_Net(nn.Module):
             epoch_loss = 0.0
             # making sure to generate new c each epoch
             rng = np.random.default_rng(c_seed + epoch)
-            c = rng.uniform(0, 1)
-            v = torch.tensor(rng.normal(0, c, size=(batch_size, arm_dim)), dtype=torch.float64.to(device))
+            c = torch.tensor(rng.uniform(0, 1), dtype=torch.float64)
+            v = torch.tensor(rng.normal(0, c, size=(batch_size, arm_dim)), dtype=torch.float64).to(device)
             for i, (data_tuple) in enumerate(tqdm(data_loader)):
                 sampled_arm_poses = data_tuple[0]
                 cart_poses = data_tuple[1]
@@ -219,7 +219,7 @@ class Normalizing_Flow_Net(nn.Module):
                 all_batch_loss.append(batch_loss)
                 
                 optimizer.zero_grad()
-                single_loss.backward()
+                batch_loss.backward()
                 optimizer.step()
 
                 epoch_loss += batch_loss
