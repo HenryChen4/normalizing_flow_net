@@ -16,7 +16,7 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 64000
+num_train_samples = 300080
 batch_size = 128
 
 # seeds
@@ -35,7 +35,7 @@ data_loader = load_data(data=training_data,
 # different hyperparameters
 num_iters = 1000
 learning_rate = 1e-7
-num_coupling_layers = 12
+num_coupling_layers = 6
 noise_scale = 1e-5
 
 # model creation
@@ -70,15 +70,15 @@ model_save_path = os.path.join(save_dir, 'model.pth')
 
 plt.plot(np.arange(num_iters), all_epoch_loss)
 plt.savefig(epoch_loss_save_path)
-plt.show()
+# plt.show()
 
 plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_batch_loss)
 plt.savefig(batch_loss_save_path)
-plt.show()
+# plt.show()
 
 plt.plot(np.arange((num_train_samples/batch_size) * num_iters), all_mean_dist)
 plt.savefig(dist_save_path)
-plt.show()
+# plt.show()
 
 torch.save(normalizing_flow_net, model_save_path)
 
