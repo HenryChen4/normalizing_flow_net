@@ -34,15 +34,15 @@ data_loader = load_data(data=training_data,
 
 # different hyperparameters
 num_iters = 1000
-learning_rate = 1e-8
+learning_rate = 5e-7
 num_coupling_layers = 5
 noise_scale = 1e-3
 
 # model creation
 conditional_net_config = {
-    "layer_specs": [(arm_dim//2 + 3, 1024),
-                    (1024, 1024),
-                    (1024, arm_dim)],
+    "layer_specs": [(arm_dim//2 + 3, 128),
+                    (128, 128),
+                    (128, arm_dim)],
     "activation": nn.LeakyReLU,
 }
 
@@ -66,9 +66,9 @@ all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
 # save results
 save_dir = f"results/2d_arm/"
 os.makedirs(save_dir, exist_ok=True)
-epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss2.png')
-dist_save_path = os.path.join(save_dir, 'mean_dist2.png')
-model_save_path = os.path.join(save_dir, 'model2.pth')
+epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss1.png')
+dist_save_path = os.path.join(save_dir, 'mean_dist1.png')
+model_save_path = os.path.join(save_dir, 'model1.pth')
 
 plt.plot(np.arange(num_iters), all_epoch_loss)
 plt.savefig(epoch_loss_save_path)

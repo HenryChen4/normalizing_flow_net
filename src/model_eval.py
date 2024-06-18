@@ -9,6 +9,18 @@ def load_model(model_save_path):
     model = torch.load(model_save_path, map_location=torch.device("cpu"))
     return model
 
+def compare(untrained_model, trained_model, permute_seed, model_settings):
+    """Compare untrained vs trained model
+    
+    Args:
+        untrained_model (Normalizing_Flow_Net): Untrained nfn model.
+        untrained_model (Normalizing_Flow_Net): Trained nfn model.
+        permute_seed (int): Seed used to permute layers in both models.
+        model_settings (dict): HP and architecture configurations for both models.
+    """
+
+    
+
 def evaluate(test_data, model, permute_seed, batch_size):
     test_loader = load_data(test_data, batch_size)
 
