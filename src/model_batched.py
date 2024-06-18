@@ -202,8 +202,8 @@ class Normalizing_Flow_Net(nn.Module):
             c = torch.tensor(rng.uniform(0, 1), dtype=torch.float64)
             v = torch.tensor(rng.normal(0, c, size=(batch_size, arm_dim)), dtype=torch.float64).to(device)
             for i, (data_tuple) in enumerate(tqdm(data_loader)):
-                sampled_arm_poses = data_tuple[0]
-                cart_poses = data_tuple[1]
+                sampled_arm_poses = data_tuple[0].to(device)
+                cart_poses = data_tuple[1].to(device)
                 modified_arm_poses = sampled_arm_poses + v
                 
                 new_arm_poses, log_det_jacobian = self.forward(arm_poses=modified_arm_poses,
