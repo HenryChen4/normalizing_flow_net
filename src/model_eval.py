@@ -27,11 +27,11 @@ def evaluate(test_data, model, permute_seed):
     
     return mean_dist/len(test_data)
 
-def evaluate_seeds(base_seed, num_seeds, permute_seed):
+def evaluate_seeds(base_seed, num_seeds, num_rows, permute_seed):
     # load the model
     arm_dim = 10
 
-    save_dir = f"results/result2"
+    save_dir = f"results/test"
     os.makedirs(save_dir, exist_ok=True)
     model_save_path = os.path.join(save_dir, 'model.pth')
 
@@ -41,7 +41,7 @@ def evaluate_seeds(base_seed, num_seeds, permute_seed):
 
     for i in trange(num_seeds):
         test_data = generate_data(arm_dim=arm_dim,
-                            num_rows=100,
+                            num_rows=num_rows,
                             random_sample_seed=base_seed+i)
 
         mean_dist = evaluate(test_data=test_data,

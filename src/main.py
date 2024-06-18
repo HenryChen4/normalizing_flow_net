@@ -16,8 +16,8 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 32000
-batch_size = 64
+num_train_samples = 2
+batch_size = 1
 
 # seeds
 train_sample_gen_seed = 41895
@@ -33,7 +33,7 @@ data_loader = load_data(data=training_data,
                         batch_size=batch_size)
 
 # different hyperparameters
-num_iters = 50
+num_iters = 2
 learning_rate = 5e-7
 num_coupling_layers = 6
 noise_scale = 1e-2
@@ -60,6 +60,8 @@ all_epoch_loss, all_batch_loss, all_mean_dist = normalizing_flow_net.train(arm_d
                                                                         c_seed=c_seed,
                                                                         permute_seed=PERMUTE_SEED)
 
+all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
+
 # save results
 save_dir = f"results/result3"
 os.makedirs(save_dir, exist_ok=True)
@@ -82,28 +84,29 @@ plt.show()
 
 torch.save(normalizing_flow_net, model_save_path)
 
-"""START of comparing trained vs untrained models"""
+# """START of comparing trained vs untrained models"""
 
 # base_seed = 5723759
-# num_seeds = 300
+# num_seeds = 1
 
 # all_untrained_dist = []
 
 # for i in trange(num_seeds):
 #     test_data = generate_data(arm_dim=arm_dim,
-#                           num_rows=100,
+#                           num_rows=10,
 #                           random_sample_seed=245823+i)
 
 #     mean_l2_error = evaluate(test_data=test_data,
 #                          model=normalizing_flow_net,
-#                          permute_seed=permute_seed)
+#                          permute_seed=PERMUTE_SEED)
     
 #     all_untrained_dist.append(mean_l2_error)
 
 # all_trained_dist = evaluate_seeds(base_seed=base_seed,
+#                                   num_rows=10,
 #                                   num_seeds=num_seeds)
 
-# save_dir = f"results/"
+# save_dir = f"results/test"
 # os.makedirs(save_dir, exist_ok=True)
 # test_dist_path = os.path.join(save_dir, 'test_dist2.png')
 
@@ -117,4 +120,4 @@ torch.save(normalizing_flow_net, model_save_path)
 # plt.savefig(test_dist_path)
 # plt.show()
 
-"""END of comparing trained vs untrained models"""
+# """END of comparing trained vs untrained models"""
