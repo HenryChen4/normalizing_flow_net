@@ -34,13 +34,14 @@ data_loader = load_data(data=training_data,
 
 # different hyperparameters
 num_iters = 1000
-learning_rate = 1e-6
-num_coupling_layers = 5
-noise_scale = 1e-3
+learning_rate = 7.5e-7
+num_coupling_layers = 3
+noise_scale = 1e-4
 
 # model creation
 conditional_net_config = {
-    "layer_specs": [(arm_dim//2 + 3, 128),
+    "layer_specs": [(arm_dim//2 + 3, 64),
+                    (64, 64),
                     (128, 128),
                     (128, arm_dim)],
     "activation": nn.LeakyReLU,
