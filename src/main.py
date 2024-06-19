@@ -34,7 +34,7 @@ data_loader = load_data(data=training_data,
 
 # different hyperparameters
 num_iters = 1000
-learning_rate = 7e-7
+learning_rate = 5e-6
 num_coupling_layers = 4
 noise_scale = 1e-3
 
