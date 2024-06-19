@@ -228,7 +228,7 @@ class Normalizing_Flow_Net(nn.Module):
                                                                permute_seed=permute_seed)
                 
                 # compute loss and backprop
-                single_loss = -self.ikflow_loss(og_sampled_arms=modified_arm_poses,
+                single_loss = self.ikflow_loss(og_sampled_arms=modified_arm_poses,
                                                 log_det_jacobian=log_det_jacobian)
                 
                 batch_loss = torch.mean(single_loss)
