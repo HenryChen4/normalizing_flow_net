@@ -238,7 +238,7 @@ class Normalizing_Flow_Net(nn.Module):
                 new_arm_poses = self.conditional_net.unnormalize(new_arm_poses.to(device))
                 
                 # compute loss and backprop
-                single_loss = self.ikflow_loss(og_sampled_arms=modified_arm_poses,
+                single_loss = self.ikflow_loss(og_sampled_arms=sampled_arm_poses,
                                                 log_det_jacobian=log_det_jacobian)
                 
                 batch_loss = torch.mean(single_loss)
