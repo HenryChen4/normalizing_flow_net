@@ -34,7 +34,7 @@ data_loader = load_data(data=training_data,
 
 # different hyperparameters
 num_iters = 1000
-learning_rate = 3e-7
+learning_rate = 7e-7
 num_coupling_layers = 4
 noise_scale = 1e-3
 
@@ -66,9 +66,9 @@ all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
 # save results
 save_dir = f"results/2d_arm/"
 os.makedirs(save_dir, exist_ok=True)
-epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss1.png')
-dist_save_path = os.path.join(save_dir, 'mean_dist1.png')
-model_save_path = os.path.join(save_dir, 'model1.pth')
+epoch_loss_save_path = os.path.join(save_dir, 'epoch_loss7e-7.png')
+dist_save_path = os.path.join(save_dir, 'mean_dist7e-7.png')
+model_save_path = os.path.join(save_dir, 'model7e-7.pth')
 
 plt.plot(np.arange(num_iters), all_epoch_loss)
 plt.savefig(epoch_loss_save_path)
