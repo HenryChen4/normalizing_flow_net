@@ -235,7 +235,7 @@ class Normalizing_Flow_Net(nn.Module):
                                                                c=c,
                                                                permute_seed=permute_seed)
                 
-                new_arm_poses = self.conditional_net.unnormalize(new_arm_poses)
+                new_arm_poses = self.conditional_net.unnormalize(new_arm_poses.to(device))
                 
                 # compute loss and backprop
                 single_loss = self.ikflow_loss(og_sampled_arms=modified_arm_poses,
