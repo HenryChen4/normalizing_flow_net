@@ -250,7 +250,7 @@ class Normalizing_Flow_Net(nn.Module):
 
                 # compute euclidean distance between sampled and target cartesian positions
                 # averaged over batch size
-                sampled_cart_poses = get_cartesian_batched(new_arm_poses.detach().numpy()).to(device)
+                sampled_cart_poses = get_cartesian_batched(new_arm_poses.cpu().detach().numpy()).to(device)
                 batch_dist = (sampled_cart_poses - cart_poses).pow(2).sum(dim=1).sqrt()
                 batch_mean_dist = batch_dist.mean()
 
