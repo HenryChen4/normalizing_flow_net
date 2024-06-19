@@ -67,9 +67,9 @@ for i in num_coupling_layers:
     # save results
     save_dir = f"results/2d_arm/"
     os.makedirs(save_dir, exist_ok=True)
-    epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_{i}_cl.png')
-    dist_save_path = os.path.join(save_dir, f'mean_dist_{i}_cl.png')
-    model_save_path = os.path.join(save_dir, f'model_{i}_cl.pth')
+    epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_{i}_2_cl.png')
+    dist_save_path = os.path.join(save_dir, f'mean_dist_{i}_2_cl.png')
+    model_save_path = os.path.join(save_dir, f'model_{i}_2_cl.pth')
 
     plt.plot(np.arange(num_iters), all_epoch_loss)
     plt.savefig(epoch_loss_save_path)

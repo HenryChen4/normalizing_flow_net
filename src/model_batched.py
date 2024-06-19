@@ -23,15 +23,21 @@ class Conditional_Net(nn.Module):
 
         self.input_mean = None
         self.input_std = None
+
+        self.initial_arm_input_normed = None
     
-    def forward(self, input):
+    def forward(self, input, arm_dim):
         # first normalize inputs
         self.input_mean = input.mean().to(device)
         self.input_std = input.std().to(device)
         input = (input - self.input_mean) / self.input_std
+
+        # set normed arm
+        self.initial_arm_input_normed = input[:,:arm_dim]
+
         # forward prop
         return self.model(input)
-    
+
     def unnormalize(self, output_arm_soln):
         return output_arm_soln * self.input_std + self.input_mean
 
@@ -90,7 +96,8 @@ class Coupling_Layer:
         noise = noise.double().to(device)
         conditional_input += noise
         
-        layer_out = self.conditional_net(conditional_input)
+        layer_out = self.conditional_net(input=conditional_input,
+                                         arm_dim=len(in_arm_poses[0]))
         s, t = layer_out.chunk(2, dim=1)
 
         s = torch.clamp(s, min=-10, max=10)
@@ -234,12 +241,13 @@ class Normalizing_Flow_Net(nn.Module):
                                                                cart_poses=cart_poses,
                                                                c=c,
                                                                permute_seed=permute_seed)
-                
+
                 new_arm_poses = self.conditional_net.unnormalize(new_arm_poses.to(device))
                 
                 # compute loss and backprop
-                single_loss = self.ikflow_loss(og_sampled_arms=sampled_arm_poses,
-                                                log_det_jacobian=log_det_jacobian)
+                # grab initial normed arm input for consistency
+                single_loss = self.ikflow_loss(og_sampled_arms=self.conditional_net.initial_arm_input_normed,
+                                               log_det_jacobian=log_det_jacobian)
                 
                 batch_loss = torch.mean(single_loss)
                 optimizer.zero_grad()
