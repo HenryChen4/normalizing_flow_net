@@ -17,6 +17,7 @@ class Conditional_Net(nn.Module):
                           bias=shape[2] if len(shape) == 3 else False)
             )
             if i != len(layer_specs) - 1:
+                layers.append(nn.BatchNorm1d(shape[1]))
                 layers.append(activation())
         self.model = nn.Sequential(*layers)
     
@@ -178,9 +179,9 @@ class Normalizing_Flow_Net(nn.Module):
                                dim=1,
                                dtype=torch.float64).unsqueeze(dim=1)
         arm_dim = len(og_sampled_arms[0])
-        log_pz = arm_dim * torch.log(torch.tensor(2*torch.pi, device=device)) + z_l2_norm
-        loss = -0.5 * log_pz - log_det_jacobian
-        return loss
+        log_pz = -0.5 * (arm_dim * torch.log(torch.tensor(2*torch.pi, device=device)) + z_l2_norm)
+        loss = log_pz + log_det_jacobian
+        return -loss
 
     def train(self, 
               arm_dim,
