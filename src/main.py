@@ -17,7 +17,7 @@ from tqdm import tqdm, trange
 # data generation vars
 arm_dim = 2
 num_train_samples = 64000
-batch_size = 64
+batch_size = 128
 
 # seeds
 train_sample_gen_seed = 752851235
@@ -36,14 +36,13 @@ data_loader = load_data(data=training_data,
 num_iters = 1000
 learning_rate = 7.5e-7
 num_coupling_layers = 3
-noise_scale = 1e-4
+noise_scale = 0.25
 
 # model creation
 conditional_net_config = {
     "layer_specs": [(arm_dim//2 + 3, 64),
-                    (64, 128),
-                    (128, 128),
-                    (128, arm_dim)],
+                    (64, 64),
+                    (64, arm_dim)],
     "activation": nn.LeakyReLU,
 }
 
