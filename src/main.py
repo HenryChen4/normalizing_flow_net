@@ -16,7 +16,7 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 2
-num_train_samples = 640000
+num_train_samples = 64000
 batch_size = 128
 
 # seeds
