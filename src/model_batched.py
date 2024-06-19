@@ -26,8 +26,8 @@ class Conditional_Net(nn.Module):
     
     def forward(self, input):
         # first normalize inputs
-        self.input_mean = input.mean()
-        self.input_std = input.std()
+        self.input_mean = input.mean().to(device)
+        self.input_std = input.std().to(device)
         input = (input - self.input_mean) / self.input_std
         # forward prop
         return self.model(input)
