@@ -20,12 +20,20 @@ class Conditional_Net(nn.Module):
                 layers.append(nn.BatchNorm1d(shape[1]))
                 layers.append(activation())
         self.model = nn.Sequential(*layers)
+
+        self.input_mean = None
+        self.input_std = None
     
     def forward(self, input):
         # first normalize inputs
-        input = (input - input.mean()) / input.std()
+        self.input_mean = input.mean()
+        self.input_std = input.std()
+        input = (input - self.input_mean) / self.input_std
         # forward prop
         return self.model(input)
+    
+    def unnormalize(self, output_arm_soln):
+        return output_arm_soln * self.input_std + self.input_mean
 
     def initialize(self, func):
         def init_weights(m):
@@ -226,6 +234,8 @@ class Normalizing_Flow_Net(nn.Module):
                                                                cart_poses=cart_poses,
                                                                c=c,
                                                                permute_seed=permute_seed)
+                
+                new_arm_poses = self.conditional_net.unnormalize(new_arm_poses)
                 
                 # compute loss and backprop
                 single_loss = self.ikflow_loss(og_sampled_arms=modified_arm_poses,
