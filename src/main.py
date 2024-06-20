@@ -36,7 +36,7 @@ data_loader = load_data(data=training_data,
 num_iters = 100
 learning_rate = 1e-3
 num_coupling_layers = [8]
-noise_scale = 0.5
+noise_scale = 1
 
 # model creation
 conditional_net_config = {
