@@ -20,9 +20,9 @@ num_train_samples = 3200
 batch_size = 16
 
 # seeds
-train_sample_gen_seed = 6571678561
-c_seed = 682627359
-PERMUTE_SEED = 12415385 # constant for both training and testing
+train_sample_gen_seed = 684624525
+c_seed = 325236
+PERMUTE_SEED = 42545252 # constant for both training and testing
 
 # sampling and loading dataset
 training_data = generate_data(arm_dim=arm_dim,
