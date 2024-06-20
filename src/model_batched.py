@@ -236,7 +236,6 @@ class Normalizing_Flow_Net(nn.Module):
                                                                c=c,
                                                                permute_seed=permute_seed+i)
 
-                print(f"prior to unnorm: {new_arm_poses}")
                 new_arm_poses = self.conditional_net.unnormalize(new_arm_poses.to(device))
                 
                 # compute loss and backprop
@@ -254,8 +253,6 @@ class Normalizing_Flow_Net(nn.Module):
                 # compute euclidean distance between sampled and target cartesian positions
                 # averaged over batch size
                 sampled_cart_poses = get_cartesian_batched(new_arm_poses.cpu().detach().numpy()).to(device)
-                print(f"after norm: {new_arm_poses}")
-                print(f"cart pose: {sampled_cart_poses}")
 
                 batch_dist = (sampled_cart_poses - cart_poses).pow(2).sum(dim=1).sqrt()
                 batch_mean_dist = batch_dist.mean()
