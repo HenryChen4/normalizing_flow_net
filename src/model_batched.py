@@ -100,8 +100,8 @@ class Coupling_Layer:
                                          arm_dim=len(in_arm_poses[0]))
         s, t = layer_out.chunk(2, dim=1)
 
-        s = torch.clamp(s, min=-10, max=10)
-        t = torch.clamp(t, min=-10, max=10)
+        # s = torch.clamp(s, min=-10, max=10)
+        # t = torch.clamp(t, min=-10, max=10)
 
         return s, t
 
@@ -183,7 +183,7 @@ class Normalizing_Flow_Net(nn.Module):
 
             # permute the solutions
             p_layer = Permute_Layer(arm_poses=arm_poses,
-                                    permute_seed=permute_seed+i)
+                                    permute_seed=permute_seed)
             arm_poses = p_layer.forward()
 
         return arm_poses, log_det_jacobian
