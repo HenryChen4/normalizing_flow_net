@@ -34,9 +34,9 @@ data_loader = load_data(data=training_data,
 
 # different hyperparameters
 num_iters = 100
-learning_rate = 7e-3
-num_coupling_layers = [2]
-noise_scale = 1.5
+learning_rate = 1e-2
+num_coupling_layers = [3, 1, 6]
+noise_scale = 3
 
 # model creation
 conditional_net_config = {
@@ -67,9 +67,9 @@ for i in num_coupling_layers:
     # save results
     save_dir = f"results/2d_arm/"
     os.makedirs(save_dir, exist_ok=True)
-    epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_{i}_3_cl.png')
-    dist_save_path = os.path.join(save_dir, f'mean_dist_{i}_3_cl.png')
-    model_save_path = os.path.join(save_dir, f'model_{i}_3_cl.pth')
+    epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_{i}_cl.png')
+    dist_save_path = os.path.join(save_dir, f'mean_dist_{i}_cl.png')
+    model_save_path = os.path.join(save_dir, f'model_{i}_cl.pth')
 
     plt.plot(np.arange(num_iters), all_epoch_loss)
     plt.savefig(epoch_loss_save_path)
