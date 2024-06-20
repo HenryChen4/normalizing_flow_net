@@ -43,7 +43,7 @@ conditional_net_config = {
     "layer_specs": [(arm_dim//2 + 3, 256),
                     (256, 256),
                     (256, arm_dim)],
-    "activation": nn.LeakyReLU,
+    "activation": nn.Sigmoid,
 }
 
 for i in num_coupling_layers:
