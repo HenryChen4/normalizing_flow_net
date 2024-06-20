@@ -15,7 +15,7 @@ from model_eval import evaluate, evaluate_seeds
 from tqdm import tqdm, trange
 
 # data generation vars
-arm_dim = 10
+arm_dim = 2
 num_train_samples = 3200
 batch_size = 16
 
@@ -33,10 +33,10 @@ data_loader = load_data(data=training_data,
                         batch_size=batch_size)
 
 # different hyperparameters
-num_iters = 200
+num_iters = 1000
 learning_rate = 1e-2
-num_coupling_layers = 10
-noise_scale = 100
+num_coupling_layers = 3
+noise_scale = 0.25
 
 # model creation
 conditional_net_config = {
