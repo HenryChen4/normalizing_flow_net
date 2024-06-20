@@ -43,7 +43,7 @@ conditional_net_config = {
     "layer_specs": [(arm_dim//2 + 3, 16),
                     (16, 16),
                     (16, arm_dim)],
-    "activation": nn.Sigmoid,
+    "activation": nn.SELU,
 }
 
 for j in noise_scale:

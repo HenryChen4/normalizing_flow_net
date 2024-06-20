@@ -23,23 +23,18 @@ class Conditional_Net(nn.Module):
 
         self.input_mean = None
         self.input_std = None
-
-        self.initial_arm_input_normed = None
     
-    def forward(self, input, arm_dim):
+    def forward(self, input):
         # first normalize inputs
         self.input_mean = input.mean().to(device)
         self.input_std = input.std().to(device)
         input = (input - self.input_mean) / self.input_std
 
-        # set normed arm
-        self.initial_arm_input_normed = input[:,:arm_dim]
-
-        # forward prop
+        # forward prop (OUTPUT IS NORMALIZED)
         return self.model(input)
 
     def unnormalize(self, output_arm_soln):
-        return output_arm_soln * self.input_std + self.input_mean
+        return (output_arm_soln * self.input_std) + self.input_mean
 
     def initialize(self, func):
         def init_weights(m):
@@ -96,8 +91,7 @@ class Coupling_Layer:
         noise = noise.double().to(device)
         conditional_input += noise
         
-        layer_out = self.conditional_net(input=conditional_input,
-                                         arm_dim=len(in_arm_poses[0]))
+        layer_out = self.conditional_net(input=conditional_input)
         s, t = layer_out.chunk(2, dim=1)
 
         s = torch.clamp(s, min=-10, max=10)
@@ -246,7 +240,7 @@ class Normalizing_Flow_Net(nn.Module):
                 
                 # compute loss and backprop
                 # grab initial normed arm input for consistency
-                single_loss = self.ikflow_loss(og_sampled_arms=self.conditional_net.initial_arm_input_normed,
+                single_loss = self.ikflow_loss(og_sampled_arms=sampled_arm_poses,
                                                log_det_jacobian=log_det_jacobian)
                 
                 batch_loss = torch.mean(single_loss)
