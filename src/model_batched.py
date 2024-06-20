@@ -240,7 +240,7 @@ class Normalizing_Flow_Net(nn.Module):
                 new_arm_poses, log_det_jacobian = self.forward(arm_poses=modified_arm_poses,
                                                                cart_poses=cart_poses,
                                                                c=c,
-                                                               permute_seed=permute_seed)
+                                                               permute_seed=permute_seed+i)
 
                 new_arm_poses = self.conditional_net.unnormalize(new_arm_poses.to(device))
                 

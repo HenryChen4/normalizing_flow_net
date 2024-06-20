@@ -33,16 +33,16 @@ data_loader = load_data(data=training_data,
                         batch_size=batch_size)
 
 # different hyperparameters
-num_iters = 100
+num_iters = 200
 learning_rate = 1e-2
 num_coupling_layers = [3, 1, 6]
 noise_scale = [10, 2, 5]
 
 # model creation
 conditional_net_config = {
-    "layer_specs": [(arm_dim//2 + 3, 256),
-                    (256, 256),
-                    (256, arm_dim)],
+    "layer_specs": [(arm_dim//2 + 3, 16),
+                    (16, 16),
+                    (16, arm_dim)],
     "activation": nn.Sigmoid,
 }
 
