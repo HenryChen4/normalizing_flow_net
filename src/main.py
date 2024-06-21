@@ -20,8 +20,8 @@ num_train_samples = 3200
 batch_size = 16
 
 # seeds
-train_sample_gen_seed = 684624525
-c_seed = 325236
+train_sample_gen_seed = 3469308469034
+c_seed = 1355190350155
 PERMUTE_SEED = 42545252 # constant for both training and testing
 
 # sampling and loading dataset
@@ -81,3 +81,4 @@ plt.show()
 plt.clf()
 
 torch.save(normalizing_flow_net, model_save_path)
+

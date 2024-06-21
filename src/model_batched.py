@@ -164,13 +164,14 @@ class Normalizing_Flow_Net(nn.Module):
                 epsilon=1e-9):
         batch_size = len(arm_poses)
         log_det_jacobian = torch.zeros((batch_size, 1), dtype=torch.float64).to(device)
+
         for i in range(self.num_layers):
             # first feed through coupling
             c_layer = Coupling_Layer(self.conditional_net, self.noise_scale)
 
             arm_poses, s = c_layer.forward(arm_poses=arm_poses,
-                                             cart_poses=cart_poses,
-                                             c=c)
+                                           cart_poses=cart_poses,
+                                           c=c)
             
             # derivative of f wrt to x. only s remains.
             log_det_jacobian += torch.mean(torch.log(torch.abs(s.to(device)) + epsilon), dim=1).unsqueeze(dim=1).to(device)
