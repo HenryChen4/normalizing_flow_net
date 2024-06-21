@@ -40,9 +40,9 @@ noise_scale = 0.25
 
 # model creation
 conditional_net_config = {
-    "layer_specs": [(arm_dim//2 + 3, 64),
-                    (64, 64),
-                    (64, arm_dim)],
+    "layer_specs": [(arm_dim//2 + 3, 64, True),
+                    (64, 64, True),
+                    (64, arm_dim, True)],
     "activation": nn.LeakyReLU,
 }
 
