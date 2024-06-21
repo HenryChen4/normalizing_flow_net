@@ -1,6 +1,8 @@
 import numpy as np
 import torch
 import torch.nn as nn
+
+from torch.nn.utils import clip_grad_norm_
 from tqdm import tqdm, trange
 from model_loading import get_cartesian_batched
 
@@ -201,7 +203,8 @@ class Normalizing_Flow_Net(nn.Module):
               learning_rate,
               batch_size,
               c_seed,
-              permute_seed):
+              permute_seed,
+              grad_clip_val=1.0):
         """Trains instance of normalizing flow network.
 
         Args:
@@ -247,6 +250,9 @@ class Normalizing_Flow_Net(nn.Module):
                 batch_loss = torch.mean(single_loss)
                 optimizer.zero_grad()
                 batch_loss.backward()
+
+                clip_grad_norm_(self.conditional_net.parameters(), grad_clip_val)
+
                 optimizer.step()
 
                 epoch_loss += batch_loss.item()

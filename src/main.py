@@ -37,6 +37,7 @@ num_iters = 200
 learning_rate = 1e-3
 num_coupling_layers = 4
 noise_scale = 0.25
+grad_clip_val = 1.0
 
 # model creation
 conditional_net_config = {
@@ -59,7 +60,8 @@ all_epoch_loss, all_mean_dist = normalizing_flow_net.train(arm_dim=arm_dim,
                                                         learning_rate=learning_rate,
                                                         batch_size=batch_size,
                                                         c_seed=c_seed,
-                                                        permute_seed=PERMUTE_SEED)
+                                                        permute_seed=PERMUTE_SEED,
+                                                        grad_clip_val=grad_clip_val)
 
 all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
 
