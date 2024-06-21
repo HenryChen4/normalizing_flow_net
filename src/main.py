@@ -11,7 +11,7 @@ from model_loading import sample_arm_input, get_cartesian, generate_data, load_d
 from model_batched import Normalizing_Flow_Net
 from visualize import visualize
 
-from model_eval import evaluate, evaluate_seeds
+from model_eval import compare
 from tqdm import tqdm, trange
 
 # data generation vars
