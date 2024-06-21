@@ -16,12 +16,12 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 2
-num_train_samples = 3200
+num_train_samples = 32000
 batch_size = 16
 
 # seeds
-train_sample_gen_seed = 72348967892345
-c_seed = 23495798023458
+train_sample_gen_seed = 7234
+c_seed = 2349579
 PERMUTE_SEED = 283623450 # constant for both training and testing
 
 # sampling and loading dataset
@@ -34,8 +34,8 @@ data_loader = load_data(data=training_data,
 
 # different hyperparameters
 num_iters = 200
-learning_rate = 1e-2
-num_coupling_layers = 3
+learning_rate = 1e-3
+num_coupling_layers = 4
 noise_scale = 0.25
 
 # model creation
