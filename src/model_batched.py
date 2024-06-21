@@ -94,8 +94,8 @@ class Coupling_Layer:
         layer_out = self.conditional_net(input=conditional_input)
         s, t = layer_out.chunk(2, dim=1)
 
-        s = torch.clamp(s, min=-50, max=50)
-        t = torch.clamp(t, min=-50, max=50)
+        s = torch.clamp(s, min=-s/10, max=s/10)
+        t = torch.clamp(t, min=-s/10, max=s/10)
 
         return s, t
 
