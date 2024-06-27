@@ -162,8 +162,8 @@ class Normalizing_Flow_Net(nn.Module):
         for i, coupling_unit in enumerate(self.coupling_units):
             generated_arm_poses, s, t, log_det_jac = coupling_unit.generate(in_arm_poses=generated_arm_poses,
                                                                             conditions=conditions)
-            self.s_hist.append(s)
-            self.t_hist.append(t)           
+            self.s_hist.append(s.detach())
+            self.t_hist.append(t.detach())           
         return generated_arm_poses, log_det_jac
 
     def backward(self,
@@ -194,6 +194,8 @@ class Normalizing_Flow_Net(nn.Module):
             epoch_loss = 0.0
 
             # do the c thing later if training is too hard
+
+            # traversing each batch of training data samples
             for i, (data_tuple) in enumerate(tqdm(data_loader)):
                 sampled_arm_poses = data_tuple[0].to(device)
                 cart_poses = data_tuple[1].to(device)
@@ -208,8 +210,8 @@ class Normalizing_Flow_Net(nn.Module):
                 # compute mean batch loss
                 mean_batch_loss = self.mean_neg_log_loss(normalized_arm_poses=normalized_arm_poses,
                                                          log_det_jacobian=log_det_jac)
-                
-                # back propagate
+
+                # backpropagate
                 optimizer.zero_grad()
                 mean_batch_loss.backward()
                 optimizer.step()
