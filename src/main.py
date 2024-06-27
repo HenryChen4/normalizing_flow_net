@@ -8,14 +8,14 @@ import os
 from matplotlib import pyplot as plt
 
 from model_loading import sample_arm_input, get_cartesian, generate_data, load_data
-from model_batched import Normalizing_Flow_Net
+from model import Normalizing_Flow_Net
 from visualize import visualize
 
 from model_eval import compare
 from tqdm import tqdm, trange
 
 # data generation vars
-arm_dim = 2
+arm_dim = 10
 num_train_samples = 3200
 batch_size = 16
 
@@ -35,52 +35,37 @@ data_loader = load_data(data=training_data,
 # different hyperparameters
 num_iters = 200
 learning_rate = 1e-3
-num_coupling_layers = 4
-noise_scale = 0.25
-grad_clip_val = 1.0
+num_coupling_layers = 10
 
 # model creation
 conditional_net_config = {
-    "layer_specs": [(arm_dim//2 + 3, 64, True),
-                    (64, 64, True),
-                    (64, arm_dim, True)],
+    "layer_specs": [(arm_dim//2 + 2, 256),
+                    (256, 256),
+                    (256, arm_dim)],
     "activation": nn.LeakyReLU,
 }
 
 # main experiment loop
 normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
-                                            noise_scale=noise_scale,
-                                            num_layers=num_coupling_layers)
+                                            num_layers=num_coupling_layers,
+                                            arm_dim=arm_dim,
+                                            permute_seed=PERMUTE_SEED)
 
 # model training
-all_epoch_loss, all_mean_dist = normalizing_flow_net.train(arm_dim=arm_dim,
-                                                        data_loader=data_loader,
-                                                        num_iters=num_iters,
-                                                        optimizer=Ranger,
-                                                        learning_rate=learning_rate,
-                                                        batch_size=batch_size,
-                                                        c_seed=c_seed,
-                                                        permute_seed=PERMUTE_SEED,
-                                                        grad_clip_val=grad_clip_val)
-
-all_mean_dist = [dist.cpu().numpy() for dist in all_mean_dist]
+all_epoch_loss = normalizing_flow_net.train(data_loader=data_loader,
+                                            num_iters=num_iters,
+                                            optimizer=Ranger,
+                                            learning_rate=learning_rate)
 
 # save results
-save_dir = f"results/2d_arm/"
+save_dir = f"results/invertible_model/"
 os.makedirs(save_dir, exist_ok=True)
-epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test4.png')
-dist_save_path = os.path.join(save_dir, f'mean_dist_test4.png')
-model_save_path = os.path.join(save_dir, f'model_test4.pth')
+epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test.png')
+model_save_path = os.path.join(save_dir, f'model_test.pth')
 
 plt.plot(np.arange(num_iters), all_epoch_loss)
 plt.savefig(epoch_loss_save_path)
 plt.show()
 plt.clf()
 
-plt.plot(np.arange(num_iters), all_mean_dist)
-plt.savefig(dist_save_path)
-plt.show()
-plt.clf()
-
 torch.save(normalizing_flow_net, model_save_path)
-
