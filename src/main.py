@@ -55,7 +55,8 @@ normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_n
 all_epoch_loss = normalizing_flow_net.train(data_loader=data_loader,
                                             num_iters=num_iters,
                                             optimizer=Ranger,
-                                            learning_rate=learning_rate)
+                                            learning_rate=learning_rate,
+                                            batch_size=batch_size)
 
 # save results
 save_dir = f"results/invertible_model/"
