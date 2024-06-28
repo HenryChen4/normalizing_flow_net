@@ -186,7 +186,7 @@ class Normalizing_Flow_Net(nn.Module):
                           log_det_jacobian):
         log_pz = -0.5 * (self.arm_dim * torch.log(torch.tensor(2 * torch.pi, device=device))) + torch.sum(normalized_arm_poses ** 2, dim=1)
         loss = log_pz + log_det_jacobian
-        return -torch.mean(loss)
+        return torch.mean(loss)
 
     def train(self,
               data_loader,
