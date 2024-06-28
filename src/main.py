@@ -36,7 +36,7 @@ data_loader = load_data(data=normalized_training_data,
 
 # different hyperparameters
 num_iters = 500
-learning_rate = 1e-8
+learning_rate = 1e-6
 num_coupling_layers = 1
 
 # model creation
@@ -60,15 +60,15 @@ all_epoch_loss = normalizing_flow_net.train(data_loader=data_loader,
                                             learning_rate=learning_rate,
                                             batch_size=batch_size)
 
-# save results
-# save_dir = f"results/invertible_model/"
-# os.makedirs(save_dir, exist_ok=True)
-# epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test.png')
-# model_save_path = os.path.join(save_dir, f'model_test.pth')
+save results
+save_dir = f"results/invertible_model/"
+os.makedirs(save_dir, exist_ok=True)
+epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test.png')
+model_save_path = os.path.join(save_dir, f'model_test.pth')
 
-# plt.plot(np.arange(num_iters), all_epoch_loss)
-# plt.savefig(epoch_loss_save_path)
-# plt.show()
-# plt.clf()
+plt.plot(np.arange(num_iters), all_epoch_loss)
+plt.savefig(epoch_loss_save_path)
+plt.show()
+plt.clf()
 
-# torch.save(normalizing_flow_net, model_save_path)
+torch.save(normalizing_flow_net, model_save_path)
