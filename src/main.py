@@ -36,7 +36,7 @@ data_loader = load_data(data=normalized_training_data,
 
 # different hyperparameters
 num_iters = 500
-learning_rate = 1e-6
+learning_rate = 5e-5
 num_coupling_layers = 1
 
 # model creation
