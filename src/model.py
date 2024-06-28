@@ -153,12 +153,13 @@ class Normalizing_Flow_Net(nn.Module):
 
         # convert weights to float64
         self.double()
+        self.to(device)
     
     def forward(self, 
                 initial_arm_poses,
                 cart_poses):
-        generated_arm_poses = initial_arm_poses
-        conditions = cart_poses # subject to change if I need to use the c variable
+        generated_arm_poses = initial_arm_poses.to(device)
+        conditions = cart_poses.to(device) # subject to change if I need to use the c variable
         for i, coupling_unit in enumerate(self.coupling_units):
             generated_arm_poses, s, t, log_det_jac = coupling_unit.generate(in_arm_poses=generated_arm_poses,
                                                                             conditions=conditions)
@@ -169,7 +170,7 @@ class Normalizing_Flow_Net(nn.Module):
 
     def backward(self,
                  final_arm_poses):
-        normalized_arm_poses = final_arm_poses
+        normalized_arm_poses = final_arm_poses.to(device)
 
         for i, coupling_unit in reversed(list(enumerate(self.coupling_units))):
             normalized_arm_poses = coupling_unit.normalize(arm_poses=normalized_arm_poses,
