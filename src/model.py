@@ -20,7 +20,7 @@ class Conditional_Net(nn.Module):
                           bias=shape[2] if len(shape) == 3 else False)
             )
             if i != len(layer_specs) - 1:
-                layers.append(nn.BatchNorm1d(shape[1]))
+                #layers.append(nn.BatchNorm1d(shape[1]))
                 layers.append(activation())
         self.model = nn.Sequential(*layers)
         self.double()
@@ -162,17 +162,22 @@ class Normalizing_Flow_Net(nn.Module):
         for i, coupling_unit in enumerate(self.coupling_units):
             generated_arm_poses, s, t, log_det_jac = coupling_unit.generate(in_arm_poses=generated_arm_poses,
                                                                             conditions=conditions)
-            self.s_hist.append(s.detach())
-            self.t_hist.append(t.detach())           
+            self.s_hist.append(s)
+            self.t_hist.append(t)
+
         return generated_arm_poses, log_det_jac
 
     def backward(self,
                  final_arm_poses):
         normalized_arm_poses = final_arm_poses
+
         for i, coupling_unit in reversed(list(enumerate(self.coupling_units))):
             normalized_arm_poses = coupling_unit.normalize(arm_poses=normalized_arm_poses,
                                                            s=self.s_hist[i],
                                                            t=self.t_hist[i])
+            self.s_hist.remove(self.s_hist[i])
+            self.t_hist.remove(self.t_hist[i])
+        
         return normalized_arm_poses
     
     def mean_neg_log_loss(self, 
@@ -203,7 +208,7 @@ class Normalizing_Flow_Net(nn.Module):
                 # first feed foward in the generative direction
                 generated_arm_poses, log_det_jac = self.forward(initial_arm_poses=sampled_arm_poses,
                                                    cart_poses=cart_poses)
-                
+
                 # normalize the generated arm poses
                 normalized_arm_poses = self.backward(generated_arm_poses)
 

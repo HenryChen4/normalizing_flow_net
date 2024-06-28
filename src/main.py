@@ -7,7 +7,7 @@ import os
 
 from matplotlib import pyplot as plt
 
-from model_loading import sample_arm_input, get_cartesian, generate_data, load_data
+from model_loading import sample_arm_input, get_cartesian, generate_data, load_data, normalize_data
 from model import Normalizing_Flow_Net
 from visualize import visualize
 
@@ -16,7 +16,7 @@ from tqdm import tqdm, trange
 
 # data generation vars
 arm_dim = 10
-num_train_samples = 3200
+num_train_samples = 64000
 batch_size = 16
 
 # seeds
@@ -29,13 +29,15 @@ training_data = generate_data(arm_dim=arm_dim,
                               num_rows=num_train_samples,
                               random_sample_seed=train_sample_gen_seed)
 
-data_loader = load_data(data=training_data,
+normalized_training_data = normalize_data(training_data)
+
+data_loader = load_data(data=normalized_training_data,
                         batch_size=batch_size)
 
 # different hyperparameters
-num_iters = 200
-learning_rate = 1e-3
-num_coupling_layers = 10
+num_iters = 500
+learning_rate = 1e-8
+num_coupling_layers = 1
 
 # model creation
 conditional_net_config = {
@@ -59,14 +61,14 @@ all_epoch_loss = normalizing_flow_net.train(data_loader=data_loader,
                                             batch_size=batch_size)
 
 # save results
-save_dir = f"results/invertible_model/"
-os.makedirs(save_dir, exist_ok=True)
-epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test.png')
-model_save_path = os.path.join(save_dir, f'model_test.pth')
+# save_dir = f"results/invertible_model/"
+# os.makedirs(save_dir, exist_ok=True)
+# epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test.png')
+# model_save_path = os.path.join(save_dir, f'model_test.pth')
 
-plt.plot(np.arange(num_iters), all_epoch_loss)
-plt.savefig(epoch_loss_save_path)
-plt.show()
-plt.clf()
+# plt.plot(np.arange(num_iters), all_epoch_loss)
+# plt.savefig(epoch_loss_save_path)
+# plt.show()
+# plt.clf()
 
-torch.save(normalizing_flow_net, model_save_path)
+# torch.save(normalizing_flow_net, model_save_path)

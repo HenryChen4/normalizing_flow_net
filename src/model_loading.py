@@ -56,6 +56,21 @@ def generate_data(arm_dim, num_rows, random_sample_seed):
                      car_y.type(torch.float64)))
     return data
 
+def normalize_data(data):
+    normalized_data = []
+    i = 0
+    for arm_pose, car_x, car_y in data:
+        normalized_arm_pose = (arm_pose - arm_pose.mean()) / arm_pose.std()
+        cart_pose = torch.cat((car_x.unsqueeze(dim=0), car_y.unsqueeze(dim=0)))
+        normalized_cart_pose = (cart_pose - cart_pose.mean()) / cart_pose.std()
+        normalized_car_x, normalized_car_y = normalized_cart_pose[0], normalized_cart_pose[1]
+        normalized_data.append((normalized_arm_pose,
+                                normalized_car_x.type(torch.float64),
+                                normalized_car_y.type(torch.float64)))
+        i += 1
+
+    return normalized_data
+
 class Arm_Dataset(Dataset):
     def __init__(self, x, y):
         self.x = x
