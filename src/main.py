@@ -60,7 +60,7 @@ all_epoch_loss = normalizing_flow_net.train(data_loader=data_loader,
                                             learning_rate=learning_rate,
                                             batch_size=batch_size)
 
-save results
+# save results
 save_dir = f"results/invertible_model/"
 os.makedirs(save_dir, exist_ok=True)
 epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test.png')
