@@ -34,7 +34,7 @@ hypernet_config = {
 num_coupling_layers = 12
 batch_size = 32
 num_iters = 100
-learning_rate = 5e-4
+learning_rate = 1e-5
 
 arm_data = generate_data(arm_dim=arm_dim,
                          num_rows=num_rows,
