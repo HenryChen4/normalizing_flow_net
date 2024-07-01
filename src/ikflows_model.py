@@ -80,7 +80,7 @@ def train(flow_network,
         all_epoch_loss (list): Loss acquired every epoch.
         all_mean_dist (list): Mean euclidean distance between sampled arm and original arm.   
     """
-    device = "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     optimizer = optimizer(flow_network.parameters(), lr=learning_rate)
 
     all_epoch_loss = []
@@ -97,9 +97,9 @@ def train(flow_network,
             batch_loss = -flow_network(original_cart_poses).log_prob(original_arm_poses)
             batch_loss = batch_loss.mean()
 
-            generated_arm_poses = flow_network(original_cart_poses).sample()   
+            generated_arm_poses = flow_network(original_cart_poses).sample().to(device)  
 
-            generated_cart_poses = get_cartesian_batched(generated_arm_poses)
+            generated_cart_poses = get_cartesian_batched(generated_arm_poses.cpu().detach().numpy()).to(device)
             all_distances = torch.norm(generated_cart_poses - original_cart_poses, p=2, dim=1)
             mean_distance = all_distances.mean()
             mean_dist += mean_distance
