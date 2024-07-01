@@ -33,7 +33,7 @@ hypernet_config = {
 }
 num_coupling_layers = 12
 batch_size = 32
-num_iters = 100
+num_iters = 1
 learning_rate = 5e-5
 
 # generate arm data
