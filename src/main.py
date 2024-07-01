@@ -24,7 +24,7 @@ permute_seed = 234682346
 random_sample_seed = 2346789234
 
 arm_dim = 10
-num_rows = 64000
+num_rows = 64
 
 # hyper params
 hypernet_config = {
@@ -60,6 +60,7 @@ all_epoch_loss, all_mean_dist = train(flow_network=flow_network,
 cpu_epoch_loss = []
 cpu_mean_dist = []
 for i in all_epoch_loss:
+    print(i)
     cpu_epoch_loss.append(i)
 
 for i in all_mean_dist:
