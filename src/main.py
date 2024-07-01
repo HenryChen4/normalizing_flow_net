@@ -53,7 +53,7 @@ flow_network = create_flow(arm_dim=arm_dim,
 all_epoch_loss, all_mean_dist = train(flow_network=flow_network,
                                 train_loader=train_loader,
                                 num_iters=num_iters,
-                                optimizer=torch.optim.adam,
+                                optimizer=torch.optim.Adam,
                                 learning_rate=learning_rate)
 
 # save results and model
