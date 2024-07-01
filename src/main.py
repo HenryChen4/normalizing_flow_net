@@ -1,74 +1,71 @@
-import numpy as np
-import torch.nn as nn
-import torch
-import torch.optim as optim
-from ranger_adabelief import RangerAdaBelief as Ranger
 import os
 
-from matplotlib import pyplot as plt
+import torch
+import torch.nn as nn
 
-from model_loading import sample_arm_input, get_cartesian, generate_data, load_data, normalize_data
-from model import Normalizing_Flow_Net
-from visualize import visualize
+import numpy as np
 
-from model_eval import compare
-from tqdm import tqdm, trange
+import matplotlib.pyplot as plt
 
-# data generation vars
-arm_dim = 10
-num_train_samples = 6400
-batch_size = 16
+from model_loading import (
+    generate_data,
+    create_loader,
+)
+
+from model import (
+    create_flow,
+    train
+)
+
+from ranger_adabelief import RangerAdaBelief as Ranger
 
 # seeds
-train_sample_gen_seed = 7234
-c_seed = 2349579
-PERMUTE_SEED = 283623450 # constant for both training and testing
+permute_seed = 263462
+random_sample_seed = 123512
 
-# sampling and loading dataset
-training_data = generate_data(arm_dim=arm_dim,
-                              num_rows=num_train_samples,
-                              random_sample_seed=train_sample_gen_seed)
+arm_dim = 10
+num_rows = 3200
 
-normalized_training_data = normalize_data(training_data)
-
-data_loader = load_data(data=normalized_training_data,
-                        batch_size=batch_size)
-
-# different hyperparameters
-num_iters = 500
-learning_rate = 5e-5
-num_coupling_layers = 10
-
-# model creation
-conditional_net_config = {
-    "layer_specs": [(arm_dim//2 + 2, 256),
-                    (256, 256),
-                    (256, arm_dim)],
-    "activation": nn.LeakyReLU,
+# hyper params
+hypernet_config = {
+    "hidden_features": (256, 256, 256),
+    "activation": nn.LeakyReLU
 }
+num_coupling_layers = 10
+batch_size = 16
+num_iters = 100
+learning_rate = 1e-5
 
-# main experiment loop
-normalizing_flow_net = Normalizing_Flow_Net(conditional_net_config=conditional_net_config,
-                                            num_layers=num_coupling_layers,
-                                            arm_dim=arm_dim,
-                                            permute_seed=PERMUTE_SEED)
+arm_data = generate_data(arm_dim=arm_dim,
+                         num_rows=num_rows,
+                         random_sample_seed=random_sample_seed)
 
-# model training
-all_epoch_loss = normalizing_flow_net.train(data_loader=data_loader,
-                                            num_iters=num_iters,
-                                            optimizer=Ranger,
-                                            learning_rate=learning_rate,
-                                            batch_size=batch_size)
+train_loader = create_loader(data=arm_data,
+                            batch_size=batch_size)
 
-# save results
-save_dir = f"results/invertible_model/"
+# create flow network
+flow_network = create_flow(arm_dim=arm_dim,
+                           num_coupling_layers=num_coupling_layers,
+                           hypernet_config=hypernet_config,
+                           permute_seed=permute_seed)
+
+# train the flow network
+all_epoch_loss, all_mean_dist = train(flow_network=flow_network,
+                                train_loader=train_loader,
+                                num_iters=num_iters,
+                                optimizer=Ranger,
+                                learning_rate=learning_rate)
+
+# save results and model
+save_dir = f"results/dummy_test"
 os.makedirs(save_dir, exist_ok=True)
-epoch_loss_save_path = os.path.join(save_dir, f'epoch_loss_test.png')
+loss_and_dist_save_path = os.path.join(save_dir, f'loss_and_dist.png')
 model_save_path = os.path.join(save_dir, f'model_test.pth')
 
-plt.plot(np.arange(num_iters), all_epoch_loss)
-plt.savefig(epoch_loss_save_path)
-plt.show()
+plt.plot(np.arange(num_iters), all_epoch_loss, color="green", label="loss")
+plt.plot(np.arange(num_iters), all_mean_dist, color="blue", label="dist")
+plt.legend()
+plt.savefig(loss_and_dist_save_path)
 plt.clf()
 
-torch.save(normalizing_flow_net, model_save_path)
+torch.save(flow_network, model_save_path)
