@@ -7,12 +7,12 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from model_loading import (
+from src.model_loading import (
     generate_data,
     create_loader,
 )
 
-from ikflows_model import (
+from src.ikflows_model import (
     create_flow,
     train
 )

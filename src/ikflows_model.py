@@ -17,7 +17,7 @@ from tqdm import (
     tqdm
 )
 
-from model_loading import get_cartesian_batched
+from src.model_loading import get_cartesian_batched
 
 def create_flow(arm_dim,
                 num_coupling_layers,
