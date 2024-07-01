@@ -60,11 +60,13 @@ all_epoch_loss, all_mean_dist = train(flow_network=flow_network,
 cpu_epoch_loss = []
 cpu_mean_dist = []
 for i in all_epoch_loss:
-    print(i)
     cpu_epoch_loss.append(i)
 
 for i in all_mean_dist:
     cpu_mean_dist.append(i)
+
+print(cpu_epoch_loss)
+print(cpu_mean_dist)
 
 # save results and model
 save_dir = f"results/dummy_test"
