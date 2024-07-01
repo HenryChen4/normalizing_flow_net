@@ -107,7 +107,7 @@ def train(flow_network,
             optimizer.zero_grad()
             batch_loss.backward()
 
-            clip_value = 0.5  # set the clip value threshold
+            clip_value = 0.2  # set the clip value threshold
             torch.nn.utils.clip_grad_value_(flow_network.parameters(), clip_value)
 
             optimizer.step()
