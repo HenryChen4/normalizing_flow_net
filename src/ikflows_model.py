@@ -81,6 +81,7 @@ def train(flow_network,
         all_mean_dist (list): Mean euclidean distance between sampled arm and original arm.   
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    flow_network.to(device)
     optimizer = optimizer(flow_network.parameters(), lr=learning_rate)
 
     all_epoch_loss = []
