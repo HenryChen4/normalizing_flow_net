@@ -101,7 +101,7 @@ def train(flow_network,
 
             generated_cart_poses = get_cartesian_batched(generated_arm_poses.cpu().detach().numpy()).to(device)
             all_distances = torch.norm(generated_cart_poses - original_cart_poses, p=2, dim=1)
-            mean_distance = all_distances.mean()
+            mean_distance = all_distances.mean().to(device)
             mean_dist += mean_distance
 
             optimizer.zero_grad()
