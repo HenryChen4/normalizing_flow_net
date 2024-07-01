@@ -24,7 +24,7 @@ permute_seed = 234682346
 random_sample_seed = 2346789234
 
 arm_dim = 10
-num_rows = 32000
+num_rows = 64000
 
 # hyper params
 hypernet_config = {
@@ -33,7 +33,7 @@ hypernet_config = {
 }
 num_coupling_layers = 12
 batch_size = 32
-num_iters = 20
+num_iters = 100
 learning_rate = 5e-4
 
 arm_data = generate_data(arm_dim=arm_dim,
