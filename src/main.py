@@ -24,11 +24,11 @@ permute_seed = 234682346
 random_sample_seed = 2346789234
 
 arm_dim = 10
-num_rows = 3200
+num_rows = 32000
 
 # hyper params
 hypernet_config = {
-    "hidden_features": (1024, 1024, 1024, 1024),
+    "hidden_features": (512, 512, 512, 512),
     "activation": nn.LeakyReLU
 }
 num_coupling_layers = 12
@@ -53,7 +53,7 @@ flow_network = create_flow(arm_dim=arm_dim,
 all_epoch_loss, all_mean_dist = train(flow_network=flow_network,
                                 train_loader=train_loader,
                                 num_iters=num_iters,
-                                optimizer=Ranger,
+                                optimizer=torch.optim.adam,
                                 learning_rate=learning_rate)
 
 # save results and model
