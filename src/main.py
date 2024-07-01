@@ -20,20 +20,20 @@ from model import (
 from ranger_adabelief import RangerAdaBelief as Ranger
 
 # seeds
-permute_seed = 263462
-random_sample_seed = 123512
+permute_seed = 234682346
+random_sample_seed = 2346789234
 
 arm_dim = 10
-num_rows = 3200
+num_rows = 64000
 
 # hyper params
 hypernet_config = {
-    "hidden_features": (256, 256, 256),
+    "hidden_features": (1024, 1024, 1024, 1024),
     "activation": nn.LeakyReLU
 }
-num_coupling_layers = 10
+num_coupling_layers = 12
 batch_size = 16
-num_iters = 100
+num_iters = 500
 learning_rate = 1e-5
 
 arm_data = generate_data(arm_dim=arm_dim,
