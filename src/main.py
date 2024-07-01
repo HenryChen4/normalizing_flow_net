@@ -36,6 +36,7 @@ batch_size = 32
 num_iters = 100
 learning_rate = 5e-5
 
+# generate arm data
 arm_data = generate_data(arm_dim=arm_dim,
                          num_rows=num_rows,
                          random_sample_seed=random_sample_seed)
@@ -62,10 +63,10 @@ os.makedirs(save_dir, exist_ok=True)
 loss_and_dist_save_path = os.path.join(save_dir, f'loss_and_dist.png')
 model_save_path = os.path.join(save_dir, f'model_test.pth')
 
-plt.plot(np.arange(num_iters), all_epoch_loss, color="green", label="loss")
-plt.plot(np.arange(num_iters), all_mean_dist, color="blue", label="dist")
+torch.save(flow_network, model_save_path)
+
+plt.plot(np.arange(num_iters), all_epoch_loss.cpu().numpy(), color="green", label="loss")
+plt.plot(np.arange(num_iters), all_mean_dist.cpu().numpy(), color="blue", label="dist")
 plt.legend()
 plt.savefig(loss_and_dist_save_path)
 plt.clf()
-
-torch.save(flow_network, model_save_path)

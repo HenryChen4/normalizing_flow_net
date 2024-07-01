@@ -1,23 +1,28 @@
 import numpy as np
 
-def visualize(solutions, link_lengths, objective, ax):
-    """Plots an arm with the given angles and link lengths on ax.
+# for debugging
+from model_loading import (
+    sample_arm_input
+)
+
+from matplotlib import pyplot as plt
+
+def visualize(solutions, link_lengths, objectives, ax):
+    """Plots multiple arms with the given angles and link lengths on ax.
     
     Args:
-        solution (np.ndarray): A (dim,) array with the joint angles of the arm.
+        solutions (list of np.ndarray): A list of (dim,) arrays with the joint angles of the arms.
         link_lengths (np.ndarray): The length of each link the arm.
-        objective (float): The objective of this solution.
-        ax (plt.Axes): A matplotlib axis on which to display the arm.
+        objectives (list of float): The objectives of these solutions.
+        ax (plt.Axes): A matplotlib axis on which to display the arms.
     """
     lim = 1.05 * np.sum(link_lengths)  # Add a bit of a border.
     ax.set_aspect("equal")
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
-
-    ax.set_title(f"Objective: {objective}")
-
-    # Plot each link / joint.
-    for solution in solutions:
+    
+    for i, solution in enumerate(solutions):
+        ax.set_title(f"Objective: {objectives[i]}")
         pos = np.array([0, 0])  # Starting position of the next joint.
         cum_thetas = np.cumsum(solution)
         for link_length, cum_theta in zip(link_lengths, cum_thetas):
@@ -31,6 +36,4 @@ def visualize(solutions, link_lengths, objective, ax):
         ax.plot(0, 0, "ro", ms=6)
         final_label = f"Final: ({pos[0]:.2f}, {pos[1]:.2f})"
         ax.plot(pos[0], pos[1], "go", ms=6, label=final_label)
-        ax.legend()
-
-# TODO: Test out printing multiple arms and printing the desired location
+        
