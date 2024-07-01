@@ -57,6 +57,14 @@ all_epoch_loss, all_mean_dist = train(flow_network=flow_network,
                                 optimizer=torch.optim.Adam,
                                 learning_rate=learning_rate)
 
+cpu_epoch_loss = []
+cpu_mean_dist = []
+for i in all_epoch_loss:
+    cpu_epoch_loss.append(i.cpu().numpy())
+
+for i in all_mean_dist:
+    cpu_mean_dist.append(i.cpu().numpy())
+
 # save results and model
 save_dir = f"results/dummy_test"
 os.makedirs(save_dir, exist_ok=True)
@@ -65,8 +73,8 @@ model_save_path = os.path.join(save_dir, f'model_test.pth')
 
 torch.save(flow_network, model_save_path)
 
-plt.plot(np.arange(num_iters), all_epoch_loss.cpu().numpy(), color="green", label="loss")
-plt.plot(np.arange(num_iters), all_mean_dist.cpu().numpy(), color="blue", label="dist")
+plt.plot(np.arange(num_iters), cpu_epoch_loss, color="green", label="loss")
+plt.plot(np.arange(num_iters), cpu_mean_dist, color="blue", label="dist")
 plt.legend()
 plt.savefig(loss_and_dist_save_path)
 plt.clf()
