@@ -23,7 +23,7 @@ def create_flow(arm_dim,
                 num_coupling_layers,
                 hypernet_config,
                 permute_seed):
-    """Creates a Zuko normalizing flow network
+    """Creates an IKFlow normalizing flow network
     
     Args:
         arm_dim (int): Number of arm joints.
@@ -80,7 +80,7 @@ def train(flow_network,
         all_epoch_loss (list): Loss acquired every epoch.
         all_mean_dist (list): Mean euclidean distance between sampled arm and original arm.   
     """
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cpu"
     optimizer = optimizer(flow_network.parameters(), lr=learning_rate)
 
     all_epoch_loss = []
