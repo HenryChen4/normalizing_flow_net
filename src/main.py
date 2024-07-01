@@ -63,7 +63,7 @@ for i in all_epoch_loss:
     cpu_epoch_loss.append(i)
 
 for i in all_mean_dist:
-    cpu_mean_dist.append(i)
+    cpu_mean_dist.append(i.cpu().numpy())
 
 print(cpu_epoch_loss)
 print(cpu_mean_dist)
