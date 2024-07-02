@@ -157,19 +157,23 @@ flow_network = create_flow(arm_dim=arm_dim,
                            hypernet_config=hyper_net_config,
                            permute_seed=permute_seed)
 
-all_epoch_loss, all_mean_dist = train_obj(flow_network=flow_network,
-                                          train_loader=train_loader,
-                                          num_iters=num_iters,
-                                          optimizer=optimizer,
-                                          learning_rate=learning_rate)
+all_epoch_loss, all_mean_dist, all_mean_obj_diff = train_obj(flow_network=flow_network,
+                                                             train_loader=train_loader,
+                                                             num_iters=num_iters,
+                                                             optimizer=optimizer,
+                                                             learning_rate=learning_rate)
 
 cpu_epoch_loss = []
 cpu_mean_dist = []
+cpu_mean_obj_diff = []
 for i in all_epoch_loss:
     cpu_epoch_loss.append(i)
 
 for i in all_mean_dist:
     cpu_mean_dist.append(i.cpu().numpy())
+
+for i in all_mean_obj_diff:
+    cpu_mean_obj_diff.append(i.cpu().numpy())
 
 # save results and model
 save_dir = f"results/archive_distill1"
@@ -181,6 +185,7 @@ torch.save(flow_network, model_save_path)
 
 plt.plot(np.arange(num_iters), cpu_epoch_loss, color="green", label="loss")
 plt.plot(np.arange(num_iters), cpu_mean_dist, color="blue", label="dist")
+plt.plot(np.arange(num_iters), cpu_mean_obj_diff, color="red", label="diff")
 plt.legend()
 plt.savefig(loss_and_dist_save_path)
 plt.clf()

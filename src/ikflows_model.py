@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 from zuko.distributions import DiagNormal
 from zuko.flows import (
@@ -133,26 +134,34 @@ def train_obj(flow_network,
 
     all_epoch_loss = []
     all_mean_dist = []
+    all_mean_obj_diff = []
 
     for epoch in trange(num_iters):
         epoch_loss = 0.
         mean_dist = 0.
+        mean_obj_diff = 0.
 
         for i, (data_tuple) in enumerate(tqdm(train_loader)):
             original_arm_poses = data_tuple[0].to(device)
             original_context = data_tuple[1].to(device)
             
             original_cart_poses = original_context[:,:-1]
+            original_obj = original_context[:,-1]
 
             batch_loss = -flow_network(original_context).log_prob(original_arm_poses)
             batch_loss = batch_loss.mean()
 
             generated_arm_poses = flow_network(original_context).sample().to(device)  
 
+            # calculate measure diff
             generated_cart_poses = get_cartesian_batched(generated_arm_poses.cpu().detach().numpy()).to(device)
             all_distances = torch.norm(generated_cart_poses - original_cart_poses, p=2, dim=1)
             mean_distance = all_distances.mean().to(device)
             mean_dist += mean_distance
+
+            # calculate obj diff
+            generated_obj = -torch.std(generated_arm_poses, axis=1).mean()
+            mean_obj_diff += (generated_obj - original_obj.mean())
 
             optimizer.zero_grad()
             batch_loss.backward()
@@ -164,8 +173,9 @@ def train_obj(flow_network,
 
             epoch_loss += batch_loss.item()
         
-        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, mean dist: {mean_dist/len(train_loader)}")
+        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, mean dist: {mean_dist/len(train_loader)}, mean_obj_diff: {mean_obj_diff/len(train_loader)}")
         all_epoch_loss.append(epoch_loss/len(train_loader))
         all_mean_dist.append(mean_dist/len(train_loader))
+        all_mean_obj_diff.append(mean_obj_diff/len(train_loader))
     
-    return all_epoch_loss, all_mean_dist
+    return all_epoch_loss, all_mean_dist, all_mean_obj_diff
