@@ -109,11 +109,6 @@ def get_training_loader(archive, batch_size):
             torch.tensor(arm_pose, dtype=torch.float64),
             torch.cat((torch.tensor(measures), torch.tensor(objective).unsqueeze(dim=0)))
         )
-
-        if i == 0:
-            print(single_train_tuple)
-
-        i += 1
         
         all_train_samples.append(single_train_tuple)
     train_loader = create_loader_better(all_train_samples, batch_size)

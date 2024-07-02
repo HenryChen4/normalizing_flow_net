@@ -47,4 +47,4 @@ def visualize_point(model, cart_pose, num_arms):
 
 # visualize model behavior
 flow_model = load_model("../results/dummy_test/model_test.pth")
-visualize_point(flow_model, torch.tensor([6, -7]), 20)
+visualize_point(flow_model, torch.tensor([-7, 6]), 20)
