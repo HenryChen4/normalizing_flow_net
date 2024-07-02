@@ -7,7 +7,7 @@ from model_loading import (
 
 from matplotlib import pyplot as plt
 
-def visualize(solutions, link_lengths, objectives, ax):
+def visualize(solutions, link_lengths, objectives, ax, conditioned_cart):
     """Plots multiple arms with the given angles and link lengths on ax.
     
     Args:
@@ -29,11 +29,11 @@ def visualize(solutions, link_lengths, objectives, ax):
             # Calculate the end of this link.
             next_pos = pos + link_length * np.array(
                 [np.cos(cum_theta), np.sin(cum_theta)])
-            ax.plot([pos[0], next_pos[0]], [pos[1], next_pos[1]], "-ko", ms=3)
+            ax.plot([pos[0], next_pos[0]], [pos[1], next_pos[1]], "-ko", ms=2, linewidth=1)
             pos = next_pos
 
-        # Add points for the start and end positions.
-        ax.plot(0, 0, "ro", ms=6)
+        # Add points for the start and end positions and conditioned positions
+        ax.plot(conditioned_cart[0].item(), conditioned_cart[1].item(), "cx", ms=10)
+        ax.plot(0, 0, "ro", ms=2)
         final_label = f"Final: ({pos[0]:.2f}, {pos[1]:.2f})"
-        ax.plot(pos[0], pos[1], "go", ms=6, label=final_label)
-        
+        ax.plot(pos[0], pos[1], "go", ms=2, label=final_label)

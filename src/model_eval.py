@@ -7,9 +7,9 @@ from model_loading import (
     get_cartesian_batched
 )
 
-from tqdm import (
-    tqdm, trange
-)
+from visualize import visualize
+import matplotlib.pyplot as plt
+import numpy as np
 
 def load_model(model_save_path):
     model = torch.load(model_save_path, map_location=torch.device("cpu"))
@@ -19,6 +19,8 @@ def test_model(flow_model,
                arm_dim,
                num_test_samples, 
                test_sample_seed):
+    '''Tests model performance on unseen test samples
+    '''
     # generate test samples
     torch.manual_seed(test_sample_seed)
     random_arm_sample = torch.rand((num_test_samples, arm_dim))
@@ -31,16 +33,18 @@ def test_model(flow_model,
     # compute mean distance between generated cart coords and original
     return generated_arm_sample, torch.norm(generated_cart_coords - original_cart_coords, p=2, dim=1).mean()
 
-flow_model = load_model("results/20_iters/model_test.pth")
+def visualize_point(model, cart_pose, num_arms):
+    all_arm_poses = []
+    for i in range(num_arms):
+        all_arm_poses.append(model(cart_pose).sample())
 
-arm_dim = 10
-num_test_samples = 20
-test_sample_seed = 13570
+    link_lengths = np.ones(shape=(num_arms, ))
+    objectives = np.ones(shape=(num_arms, ))
+    fig, ax = plt.subplots()
 
-generated_arm_sample, mean_dist = test_model(flow_model=flow_model,
-                       arm_dim=arm_dim,
-                       num_test_samples=num_test_samples,
-                       test_sample_seed=test_sample_seed)
+    visualize(all_arm_poses, link_lengths, objectives, ax, cart_pose)
+    plt.show()
 
-print(generated_arm_sample)
-print(mean_dist)
+# visualize model behavior
+flow_model = load_model("../results/dummy_test/model_test.pth")
+visualize_point(flow_model, torch.tensor([6, -7]), 20)

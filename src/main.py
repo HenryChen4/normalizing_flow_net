@@ -47,6 +47,7 @@ train_loader = create_loader(data=arm_data,
 # create flow network
 flow_network = create_flow(arm_dim=arm_dim,
                            num_coupling_layers=num_coupling_layers,
+                           num_context=2, # only cartesian (x, y) are passed in for this case only
                            hypernet_config=hypernet_config,
                            permute_seed=permute_seed)
 

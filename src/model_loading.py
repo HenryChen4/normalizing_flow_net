@@ -4,7 +4,7 @@ import numpy as np
 
 def sample_arm_input(arm_dim, seed):
     rng = np.random.default_rng(seed=seed)
-    return torch.tensor(rng.normal(loc=0.0, scale=np.pi/3, size=(arm_dim, )), dtype=torch.float32)
+    return torch.tensor(rng.normal(loc=0.0, scale=np.pi/3, size=(arm_dim, )), dtype=torch.float64)
 
 def get_cartesian(arm_pos):
     theta_sum = 0
@@ -14,7 +14,7 @@ def get_cartesian(arm_pos):
         theta_sum += theta
         x_final += np.cos(theta_sum)
         y_final += np.sin(theta_sum)
-    return torch.tensor((x_final, y_final), dtype=torch.float32)
+    return torch.tensor((x_final, y_final), dtype=torch.float64)
 
 def get_cartesian_batched(arm_poses):
     all_arm_poses = []
@@ -29,8 +29,8 @@ def generate_data(arm_dim, num_rows, random_sample_seed):
                                         seed=random_sample_seed+i)
         car_x, car_y = get_cartesian(arm_solution)
         data.append((arm_solution, 
-                     car_x.type(torch.float32), 
-                     car_y.type(torch.float32)))
+                     car_x.type(torch.float64), 
+                     car_y.type(torch.float64)))
     return data
 
 def normalize_data(data):
@@ -42,8 +42,8 @@ def normalize_data(data):
         normalized_cart_pose = (cart_pose - cart_pose.mean()) / cart_pose.std()
         normalized_car_x, normalized_car_y = normalized_cart_pose[0], normalized_cart_pose[1]
         normalized_data.append((normalized_arm_pose,
-                                normalized_car_x.type(torch.float32),
-                                normalized_car_y.type(torch.float32)))
+                                normalized_car_x.type(torch.float64),
+                                normalized_car_y.type(torch.float64)))
         i += 1
 
     return normalized_data
@@ -66,4 +66,13 @@ def create_loader(data, batch_size):
     dataset = Arm_Dataset(x, y)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     
+    return dataloader
+
+def create_loader_better(data, batch_size):
+    x = [item[0] for item in data]
+    y = [item[1] for item in data]
+
+    dataset = Arm_Dataset(x, y)
+    dataloader = DataLoader(dataset, batch_size)
+
     return dataloader

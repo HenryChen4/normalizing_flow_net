@@ -21,6 +21,7 @@ from src.model_loading import get_cartesian_batched
 
 def create_flow(arm_dim,
                 num_coupling_layers,
+                num_context,
                 hypernet_config,
                 permute_seed):
     """Creates an IKFlow normalizing flow network
@@ -39,15 +40,15 @@ def create_flow(arm_dim,
 
         single_transform = GeneralCouplingTransform(
             features=arm_dim,
-            context=2,
+            context=num_context,
             univariate=MonotonicAffineTransform,
             **hypernet_config
-        )
+        ).double()
         permute_transform = UnconditionalTransform(
             PermutationTransform,
             torch.randperm(arm_dim),
             buffer=True
-        )
+        ).double()
         transforms.append(single_transform)
         transforms.append(permute_transform)
 
@@ -55,8 +56,8 @@ def create_flow(arm_dim,
         transform=transforms,
         base=UnconditionalDistribution(
             DiagNormal,
-            loc=torch.full((arm_dim, ), 0, dtype=torch.float32),
-            scale=torch.full((arm_dim, ), torch.pi/3, dtype=torch.float32),
+            loc=torch.full((arm_dim, ), 0, dtype=torch.float64),
+            scale=torch.full((arm_dim, ), torch.pi/3, dtype=torch.float64),
             buffer=True
         )
     )
@@ -68,7 +69,7 @@ def train(flow_network,
           num_iters,
           optimizer,
           learning_rate):
-    """Trains normalizing flow network.
+    """Trains normalizing flow network with only cartesian poses at context.
 
     Args:
         flow_network (Flow): Normalizing flow network.
@@ -99,6 +100,54 @@ def train(flow_network,
             batch_loss = batch_loss.mean()
 
             generated_arm_poses = flow_network(original_cart_poses).sample().to(device)  
+
+            generated_cart_poses = get_cartesian_batched(generated_arm_poses.cpu().detach().numpy()).to(device)
+            all_distances = torch.norm(generated_cart_poses - original_cart_poses, p=2, dim=1)
+            mean_distance = all_distances.mean().to(device)
+            mean_dist += mean_distance
+
+            optimizer.zero_grad()
+            batch_loss.backward()
+
+            clip_value = 0.5  # set the clip value threshold
+            torch.nn.utils.clip_grad_value_(flow_network.parameters(), clip_value)
+
+            optimizer.step()
+
+            epoch_loss += batch_loss.item()
+        
+        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, mean dist: {mean_dist/len(train_loader)}")
+        all_epoch_loss.append(epoch_loss/len(train_loader))
+        all_mean_dist.append(mean_dist/len(train_loader))
+    
+    return all_epoch_loss, all_mean_dist
+
+def train_obj(flow_network,
+              train_loader,
+              num_iters,
+              optimizer,
+              learning_rate):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    flow_network.to(device)
+    optimizer = optimizer(flow_network.parameters(), lr=learning_rate)
+
+    all_epoch_loss = []
+    all_mean_dist = []
+
+    for epoch in trange(num_iters):
+        epoch_loss = 0.
+        mean_dist = 0.
+
+        for i, (data_tuple) in enumerate(tqdm(train_loader)):
+            original_arm_poses = data_tuple[0].to(device)
+            original_context = data_tuple[1].to(device)
+            
+            original_cart_poses = original_context[:,:-1]
+
+            batch_loss = -flow_network(original_context).log_prob(original_arm_poses)
+            batch_loss = batch_loss.mean()
+
+            generated_arm_poses = flow_network(original_context).sample().to(device)  
 
             generated_cart_poses = get_cartesian_batched(generated_arm_poses.cpu().detach().numpy()).to(device)
             all_distances = torch.norm(generated_cart_poses - original_cart_poses, p=2, dim=1)
