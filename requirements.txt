@@ -85,3 +85,4 @@ urllib3==2.2.1
 Werkzeug==3.0.3
 xarray==2024.5.0
 zipp==3.19.0
+zuko==1.2.0
