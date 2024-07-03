@@ -123,11 +123,13 @@ def train(flow_network,
     
     return all_epoch_loss, all_mean_dist
 
-def train_obj(flow_network,
-              train_loader,
-              num_iters,
-              optimizer,
-              learning_rate):
+def train_archive_distill(flow_network,
+                          train_loader,
+                          num_iters,
+                          optimizer,
+                          learning_rate):
+    """Train normalizing flow network with cartesian pose and objective as context.
+    """
     device = "cuda" if torch.cuda.is_available() else "cpu"
     flow_network.to(device)
     optimizer = optimizer(flow_network.parameters(), lr=learning_rate)
@@ -154,7 +156,8 @@ def train_obj(flow_network,
             generated_arm_poses = flow_network(original_context).sample().to(device)  
 
             # calculate measure diff
-            generated_cart_poses = get_cartesian_batched(generated_arm_poses.cpu().detach().numpy()).to(device)
+            generated_cart_poses = get_cartesian_batched(generated_arm_poses.cpu().detach().numpy()
+                                                         ).to(device)
             all_distances = torch.norm(generated_cart_poses - original_cart_poses, p=2, dim=1)
             mean_distance = all_distances.mean().to(device)
             mean_dist += mean_distance
@@ -166,14 +169,17 @@ def train_obj(flow_network,
             optimizer.zero_grad()
             batch_loss.backward()
 
-            clip_value = 0.5  # set the clip value threshold
+            clip_value = 0.5  # anything > is risky (according to tests)
             torch.nn.utils.clip_grad_value_(flow_network.parameters(), clip_value)
 
             optimizer.step()
 
             epoch_loss += batch_loss.item()
         
-        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, mean dist: {mean_dist/len(train_loader)}, mean_obj_diff: {mean_obj_diff/len(train_loader)}")
+        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, 
+              mean dist: {mean_dist/len(train_loader)}, 
+              mean_obj_diff: {mean_obj_diff/len(train_loader)}")
+        
         all_epoch_loss.append(epoch_loss/len(train_loader))
         all_mean_dist.append(mean_dist/len(train_loader))
         all_mean_obj_diff.append(mean_obj_diff/len(train_loader))

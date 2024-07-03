@@ -42,21 +42,21 @@ arm_data = generate_data(arm_dim=arm_dim,
                          random_sample_seed=random_sample_seed)
 
 train_loader = create_loader(data=arm_data,
-                            batch_size=batch_size)
+                             batch_size=batch_size)
 
 # create flow network
 flow_network = create_flow(arm_dim=arm_dim,
                            num_coupling_layers=num_coupling_layers,
-                           num_context=2, # only cartesian (x, y) are passed in for this case only
+                           num_context=2, # only cartesian (x, y) are passed in for this case 
                            hypernet_config=hypernet_config,
                            permute_seed=permute_seed)
 
 # train the flow network
 all_epoch_loss, all_mean_dist = train(flow_network=flow_network,
-                                train_loader=train_loader,
-                                num_iters=num_iters,
-                                optimizer=torch.optim.Adam,
-                                learning_rate=learning_rate)
+                                      train_loader=train_loader,
+                                      num_iters=num_iters,
+                                      optimizer=torch.optim.Adam,
+                                      learning_rate=learning_rate) 
 
 cpu_epoch_loss = []
 cpu_mean_dist = []

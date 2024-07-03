@@ -16,7 +16,7 @@ from ribs.schedulers import Scheduler
 from ribs.visualize import cvt_archive_heatmap
 
 from src.model_loading import create_loader_better
-from src.ikflows_model import create_flow, train_obj
+from src.ikflows_model import create_flow, train_archive_distill
 
 def simulate(solutions, link_lengths):
     objs = -np.std(solutions, axis=1)
@@ -68,6 +68,7 @@ def create_scheduler(arm_dim):
     return archive, scheduler
 
 def fill_archive(arm_dim, scheduler, archive, num_iters):
+    """Runs QD algorithm"""
     metrics = {
         "Archive Size": {
             "itrs": [0],
@@ -81,6 +82,9 @@ def fill_archive(arm_dim, scheduler, archive, num_iters):
 
     for itr in trange(1, num_iters + 1, desc='Iterations', file=sys.stdout):
         sols = scheduler.ask()
+
+        # Keep track of these solutions for more training data
+
         objs, meas = simulate(sols, link_lengths=np.ones(arm_dim))
         scheduler.tell(objs, meas)
 
@@ -101,10 +105,6 @@ def get_training_loader(archive, batch_size):
         objective = elite["objective"]
         measures = elite["measures"]
 
-        # print(torch.tensor(arm_pose))
-        # print(torch.tensor(objective))
-        # print(torch.tensor(measures))
-
         single_train_tuple = (
             torch.tensor(arm_pose, dtype=torch.float64),
             torch.cat((torch.tensor(measures), torch.tensor(objective).unsqueeze(dim=0)))
@@ -113,10 +113,6 @@ def get_training_loader(archive, batch_size):
         all_train_samples.append(single_train_tuple)
     train_loader = create_loader_better(all_train_samples, batch_size)
     return train_loader
-
-'''
-Trains a flow network using data from archive
-'''
 
 # QD Loop hyperparams
 arm_dim = 10
@@ -152,11 +148,11 @@ flow_network = create_flow(arm_dim=arm_dim,
                            hypernet_config=hyper_net_config,
                            permute_seed=permute_seed)
 
-all_epoch_loss, all_mean_dist, all_mean_obj_diff = train_obj(flow_network=flow_network,
-                                                             train_loader=train_loader,
-                                                             num_iters=num_iters,
-                                                             optimizer=optimizer,
-                                                             learning_rate=learning_rate)
+all_epoch_loss, all_mean_dist, all_mean_obj_diff = train_archive_distill(flow_network=flow_network,
+                                                                         train_loader=train_loader,
+                                                                         num_iters=num_iters,
+                                                                         optimizer=optimizer,
+                                                                         learning_rate=learning_rate)
 
 cpu_epoch_loss = []
 cpu_mean_dist = []

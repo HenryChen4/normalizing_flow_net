@@ -8,10 +8,11 @@ from model_loading import (
 )
 
 from model_eval import load_model
-
 from visualize import visualize
+
 import matplotlib.pyplot as plt
 import numpy as np
+from ribs.emitters import EmitterBase
 
 def visualize_point(model, context, num_arms):
     all_arm_poses = []
@@ -21,7 +22,7 @@ def visualize_point(model, context, num_arms):
     link_lengths = np.ones(shape=(num_arms, ))
     objectives = np.ones(shape=(num_arms, ))
     objectives = np.repeat(context[-1], num_arms)
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
 
     visualize(all_arm_poses, link_lengths, objectives, ax, context[:-1])
     plt.show()

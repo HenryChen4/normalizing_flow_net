@@ -28,25 +28,11 @@ def generate_data(arm_dim, num_rows, random_sample_seed):
         arm_solution = sample_arm_input(arm_dim=arm_dim, 
                                         seed=random_sample_seed+i)
         car_x, car_y = get_cartesian(arm_solution)
+        
         data.append((arm_solution, 
-                     car_x.type(torch.float64), 
-                     car_y.type(torch.float64)))
+                     torch.cat((car_x.unsqueeze(dim=0), 
+                                car_y.unsqueeze(dim=0)))))
     return data
-
-def normalize_data(data):
-    normalized_data = []
-    i = 0
-    for arm_pose, car_x, car_y in data:
-        normalized_arm_pose = (arm_pose - arm_pose.mean()) / arm_pose.std()
-        cart_pose = torch.cat((car_x.unsqueeze(dim=0), car_y.unsqueeze(dim=0)))
-        normalized_cart_pose = (cart_pose - cart_pose.mean()) / cart_pose.std()
-        normalized_car_x, normalized_car_y = normalized_cart_pose[0], normalized_cart_pose[1]
-        normalized_data.append((normalized_arm_pose,
-                                normalized_car_x.type(torch.float64),
-                                normalized_car_y.type(torch.float64)))
-        i += 1
-
-    return normalized_data
 
 class Arm_Dataset(Dataset):
     def __init__(self, x, y):
@@ -58,17 +44,8 @@ class Arm_Dataset(Dataset):
     
     def __getitem__(self, index):
         return self.x[index], self.y[index]
-    
-def create_loader(data, batch_size):
-    x = [item[0] for item in data]
-    y = [torch.cat((item[1].unsqueeze(dim=0), item[2].unsqueeze(dim=0))) for item in data]
-    
-    dataset = Arm_Dataset(x, y)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    
-    return dataloader
 
-def create_loader_better(data, batch_size):
+def create_loader(data, batch_size):
     x = [item[0] for item in data]
     y = [item[1] for item in data]
 
