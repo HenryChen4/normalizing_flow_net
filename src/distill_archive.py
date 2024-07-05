@@ -40,7 +40,7 @@ hypernet_config = {
     "activation": nn.LeakyReLU
 }
 permute_seed = 1357981375
-num_iters = 1
+num_iters = 200
 learning_rate = 5e-5
 optimizer = torch.optim.Adam
 
