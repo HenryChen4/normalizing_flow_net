@@ -12,7 +12,7 @@ import os
 import numpy as np
 
 arm_dim = 10
-train_batch_size = 16
+train_batch_size = 32
 
 # QD training hyperparameters (bigger numbers == more training data)
 # These settings produce 112898 total training samples
