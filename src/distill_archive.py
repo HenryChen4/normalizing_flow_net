@@ -22,6 +22,7 @@ sigma0 = 0.1
 batch_size = 30
 num_emitters = 5
 
+print(">Starting QD loop to generate training samples")
 train_loader = gather_solutions(arm_dim=arm_dim,
                                 num_qd_iters=num_qd_iters,
                                 train_batch_size=train_batch_size,
@@ -29,17 +30,17 @@ train_loader = gather_solutions(arm_dim=arm_dim,
                                 sigma0=sigma0,
                                 batch_size=batch_size,
                                 num_emitters=num_emitters)
-
+print(">Ending QD loop to generate training samples")
 # create ik flow archive model
 # archive model hyperparameters
 num_coupling_layers = 12
 num_context = 3
 hypernet_config = {
-    "layers": (512, 512, 512, 512),
+    "hidden_features": (512, 512, 512, 512),
     "activation": nn.LeakyReLU
 }
 permute_seed = 1357981375
-num_iters = 200
+num_iters = 1
 learning_rate = 5e-5
 optimizer = torch.optim.Adam
 
@@ -50,6 +51,7 @@ flow = create_flow(arm_dim=arm_dim,
                    permute_seed=permute_seed)
 
 # train archive model on archive data
+print(">Starting archive model training loop to distill archive data")
 all_epoch_loss, all_mean_dist, all_mean_obj_diff = train_archive_distill(flow_network=flow,
                                                                          train_loader=train_loader,
                                                                          num_iters=num_iters,
