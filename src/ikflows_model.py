@@ -176,9 +176,7 @@ def train_archive_distill(flow_network,
 
             epoch_loss += batch_loss.item()
         
-        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, 
-              mean dist: {mean_dist/len(train_loader)}, 
-              mean_obj_diff: {mean_obj_diff/len(train_loader)}")
+        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, mean dist: {mean_dist/len(train_loader)}, mean_obj_diff: {mean_obj_diff/len(train_loader)}")
         
         all_epoch_loss.append(epoch_loss/len(train_loader))
         all_mean_dist.append(mean_dist/len(train_loader))
