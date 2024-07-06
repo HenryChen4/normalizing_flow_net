@@ -33,15 +33,15 @@ train_loader = gather_solutions(arm_dim=arm_dim,
 print(">Ending QD loop to generate training samples")
 # create ik flow archive model
 # archive model hyperparameters
-num_coupling_layers = 12
+num_coupling_layers = 15
 num_context = 3
 hypernet_config = {
-    "hidden_features": (512, 512, 512, 512),
+    "hidden_features": (1024, 1024, 1024, 1024),
     "activation": nn.LeakyReLU
 }
-permute_seed = 1357981375
+permute_seed = 5675807897
 num_iters = 200
-learning_rate = 5e-5
+learning_rate = 7.5e-5
 optimizer = torch.optim.Adam
 
 flow = create_flow(arm_dim=arm_dim,
