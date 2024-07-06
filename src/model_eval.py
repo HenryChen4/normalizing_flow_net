@@ -1,5 +1,3 @@
-#TODO: change how everything is structured and make bigger tests.
-
 import os
 import torch.nn as nn
 import torch

@@ -1,6 +1,5 @@
-# TODO: 1. Create the archive and grab all solutions from archive
-# TODO: 2. Train an NFN on that data over a number of iterations
-# TODO: 3. Write functions that can be used in main.py
+"""Trains a normalizing flow network archive model using data from archive
+"""
 
 import torch.nn as nn
 import torch
@@ -41,7 +40,7 @@ hypernet_config = {
 }
 permute_seed = 5675807897
 num_iters = 50
-learning_rate = 7.5e-5
+learning_rate = 1e-4
 optimizer = torch.optim.Adam
 
 flow = create_flow(arm_dim=arm_dim,

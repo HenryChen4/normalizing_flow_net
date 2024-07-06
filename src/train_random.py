@@ -1,3 +1,6 @@
+"""Trains normalizinf flow net using randomly sampled arms without objective.
+"""
+
 import os
 
 import torch
