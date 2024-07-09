@@ -47,12 +47,12 @@ def get_evaluation_archives(archive_model,
                                           dtype=torch.float32,
                                           device=device)
         
-        # set objective to max, in this case, 0.
-        objective = torch.zeros(feature_grid_torch.shape[0], 1)
-        feature_grid_torch = torch.cat((feature_grid_torch, objective), dim=1)
+        # set objective to max, in this case, 1.0
+        objective = torch.ones(feature_grid_torch.shape[0], 1)
+        context = torch.cat((feature_grid_torch, objective), dim=1)
 
         # pylint: disable-next = not-callable
-        solutions: torch.Tensor = archive_model(feature_grid_torch).sample()
+        solutions: torch.Tensor = archive_model(context).sample()
         objectives, features = simulate(solutions.numpy(), link_lengths=np.ones(arm_dim))
 
     # set archive model to train mode

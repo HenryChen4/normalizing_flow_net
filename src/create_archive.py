@@ -12,7 +12,7 @@ from src.model_loading import create_loader
 
 def simulate(solutions, link_lengths):
     """Objective and measure function"""
-    objs = -np.std(solutions, axis=1)
+    objs = 1.0 - np.var(solutions, axis=1)
 
     cum_theta = np.cumsum(solutions, axis=1)
     x_pos = link_lengths[None] * np.cos(cum_theta)
@@ -24,6 +24,24 @@ def simulate(solutions, link_lengths):
             np.sum(y_pos, axis=1, keepdims=True),
         ),
         axis=1,
+    )
+
+    return objs, meas
+
+def torch_simulate(solutions, link_lengths):
+    """simulate but with torch"""
+    objs = -torch.std(solutions, dim=1)
+
+    cum_theta = torch.cumsum(solutions, dim=1)
+    x_pos = link_lengths[None] * torch.cos(cum_theta)
+    y_pos = link_lengths[None] * torch.sin(cum_theta)
+
+    meas = torch.cat(
+        (
+            torch.sum(x_pos, dim=1),
+            torch.sum(y_pos, dim=1)
+        ),
+        dim=1
     )
 
     return objs, meas

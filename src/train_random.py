@@ -15,7 +15,7 @@ from src.model_loading import (
     create_loader,
 )
 
-from src.ikflows_model import (
+from normalizing_flow_net.src.nfn_model import (
     create_flow,
     train
 )
