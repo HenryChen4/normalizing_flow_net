@@ -10,16 +10,16 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-arm_dim = 10
+arm_dim = 100
 train_batch_size = 32
 
 # QD training hyperparameters (bigger numbers == more training data)
-# These settings produce 112898 total training samples
+# These settings produce ~112898 total training samples
 num_qd_iters = 700
 cells = 10000
 sigma0 = 0.1
 batch_size = 30
-num_emitters = 5
+num_emitters = 700
 
 print(">Starting QD loop to generate training samples")
 train_loader = gather_solutions(arm_dim=arm_dim,
@@ -32,15 +32,15 @@ train_loader = gather_solutions(arm_dim=arm_dim,
 print(">Ending QD loop to generate training samples")
 # create ik flow archive model
 # archive model hyperparameters
-num_coupling_layers = 15
+num_coupling_layers = 120
 num_context = 3
 hypernet_config = {
-    "hidden_features": (1024, 1024, 1024, 1024),
+    "hidden_features": (2048, 2048, 2048, 2048),
     "activation": nn.LeakyReLU
 }
 permute_seed = 5675807897
 num_iters = 50
-learning_rate = 1e-4
+learning_rate = 1e-5
 optimizer = torch.optim.Adam
 
 flow = create_flow(arm_dim=arm_dim,
@@ -70,7 +70,7 @@ for i in all_mean_obj_diff:
     cpu_mean_obj_diff.append(i.cpu().numpy())
 
 # save results and model
-save_dir = f"results/archive_distill3"
+save_dir = f"results/archive_distill100d"
 os.makedirs(save_dir, exist_ok=True)
 loss_and_dist_save_path = os.path.join(save_dir, f'loss_and_dist.png')
 model_save_path = os.path.join(save_dir, f'model_test.pth')
