@@ -12,9 +12,10 @@ Loop:
 import torch
 import torch.nn as nn
 import numpy as np
-from normalizing_flow_net.src.nfn_model import create_flow
+from src.nfn_model import create_flow
 from src.create_archive import torch_simulate
 from tqdm import trange, tqdm
+import matplotlib.pyplot as plt
 
 # only works for arm domain rn and nfn models
 def damt(archive_model, 
@@ -40,33 +41,32 @@ def damt(archive_model,
 
         # step 2: collect arm solutions from nfn, conditioned on best arm obj and features
         arm_poses = archive_model(context).rsample()
-        print(arm_poses)
 
         # step 3: evaluate arm solutions
-        objectives, sampled_features = torch_simulate(arm_poses, link_lengths=np.ones(arm_dim))
-        print(objectives, sampled_features)
-
-        # objectives, sampled_features = torch.tensor(objectives), torch.tensor(sampled_features)
+        objectives, sampled_features = torch_simulate(arm_poses, link_lengths=torch.ones(arm_dim))
 
         # step 4: optimize
-        # feature_errors = torch.linalg.norm(sampled_features - true_features, axis=1)
-        # training_objective = torch.sum(objectives - feature_errors/max_feature_dist)
-        # loss = -training_objective
-        # all_loss.append(loss)
+        feature_errors = torch.linalg.norm(sampled_features - true_features, axis=1)
+        training_objective = torch.sum(objectives - feature_errors/max_feature_dist)
+        loss = -training_objective
+        all_loss.append(loss)
 
-        # optimizer.zero_grad()
-        # loss.backward()
-        # optimizer.step()        
+        # grad ascent so loss is negated
+        print(f"epoch {i} loss: {-loss}")
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()        
 
     return all_loss
         
 
 # hyperparams for archive model (NFN)
 arm_dim = 10
-num_coupling_layers = 15
+num_coupling_layers = 14
 num_context = 3 # i think we can try passing in max obj for now
 hyper_net_config = {
-    "hidden_features": (2048, 2048, 2048, 2048),
+    "hidden_features": (124, 124, 124),
     "activation": nn.LeakyReLU
 }
 permute_seed = 1235091783590
@@ -79,8 +79,8 @@ archive_model = create_flow(arm_dim=arm_dim,
                             permute_seed=permute_seed)
 
 # hyperparams for damt
-num_iters = 1
-batch_size = 2
+num_iters = 100
+batch_size = 20
 trade_off = 0.2
 feature_sample_seed = 5172035
 optimizer = torch.optim.Adam
@@ -95,4 +95,8 @@ damt_loss = damt(archive_model=archive_model,
                  optimizer=optimizer,
                  learning_rate=learning_rate)
 
-print(damt_loss)
+print("Final loss value:")
+print(damt_loss[-1])
+
+# plt.plot(np.arange(num_iters), [loss for loss.detach().numpy() in damt_loss])
+# plt.show()

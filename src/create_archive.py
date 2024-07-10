@@ -36,12 +36,12 @@ def torch_simulate(solutions, link_lengths):
     x_pos = link_lengths[None] * torch.cos(cum_theta)
     y_pos = link_lengths[None] * torch.sin(cum_theta)
 
-    meas = torch.cat(
+    meas = torch.stack(
         (
             torch.sum(x_pos, dim=1),
             torch.sum(y_pos, dim=1)
         ),
-        dim=1
+        axis=1
     )
 
     return objs, meas

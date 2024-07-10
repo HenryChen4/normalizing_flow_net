@@ -136,19 +136,19 @@ def train_archive_distill(flow_network,
 
     all_epoch_loss = []
     all_mean_dist = []
-    all_mean_obj_diff = []
+    # all_mean_obj_diff = []
 
     for epoch in trange(num_iters):
         epoch_loss = 0.
         mean_dist = 0.
-        mean_obj_diff = 0.
+        # mean_obj_diff = 0.
 
         for i, (data_tuple) in enumerate(tqdm(train_loader)):
             original_arm_poses = data_tuple[0].to(device)
             original_context = data_tuple[1].to(device)
             
             original_cart_poses = original_context[:,:-1]
-            original_obj = original_context[:,-1]
+            # original_obj = original_context[:,-1]
 
             batch_loss = -flow_network(original_context).log_prob(original_arm_poses)
             batch_loss = batch_loss.mean()
@@ -162,9 +162,9 @@ def train_archive_distill(flow_network,
             mean_distance = all_distances.mean().to(device)
             mean_dist += mean_distance
 
-            # calculate obj diff
-            generated_obj = -torch.std(generated_arm_poses, axis=1).mean()
-            mean_obj_diff += (generated_obj - original_obj.mean())
+            # # calculate obj diff
+            # generated_obj = 1.0-torch.std(generated_arm_poses, axis=1).mean()
+            # mean_obj_diff += (generated_obj - original_obj.mean())
 
             optimizer.zero_grad()
             batch_loss.backward()
@@ -176,10 +176,10 @@ def train_archive_distill(flow_network,
 
             epoch_loss += batch_loss.item()
         
-        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, mean dist: {mean_dist/len(train_loader)}, mean_obj_diff: {mean_obj_diff/len(train_loader)}")
+        print(f"epoch: {epoch}, loss: {epoch_loss/len(train_loader)}, mean dist: {mean_dist/len(train_loader)}")#, mean_obj_diff: {mean_obj_diff/len(train_loader)}")
         
         all_epoch_loss.append(epoch_loss/len(train_loader))
         all_mean_dist.append(mean_dist/len(train_loader))
-        all_mean_obj_diff.append(mean_obj_diff/len(train_loader))
+        # all_mean_obj_diff.append(mean_obj_diff/len(train_loader))
     
-    return all_epoch_loss, all_mean_dist, all_mean_obj_diff
+    return all_epoch_loss, all_mean_dist, # all_mean_obj_diff
