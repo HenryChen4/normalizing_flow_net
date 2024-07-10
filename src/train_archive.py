@@ -3,7 +3,7 @@
 
 import torch.nn as nn
 import torch
-from normalizing_flow_net.src.nfn_model import create_flow, train_archive_distill
+from src.nfn_model import create_flow, train_archive_distill
 
 from src.create_archive import gather_solutions
 import matplotlib.pyplot as plt
