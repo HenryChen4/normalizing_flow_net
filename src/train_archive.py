@@ -51,7 +51,7 @@ flow = create_flow(arm_dim=arm_dim,
 
 # train archive model on archive data
 print(">Starting archive model training loop to distill archive data")
-all_epoch_loss, all_mean_dist, all_mean_obj_diff = train_archive_distill(flow_network=flow,
+all_epoch_loss, all_mean_dist = train_archive_distill(flow_network=flow,
                                                                          train_loader=train_loader,
                                                                          num_iters=num_iters,
                                                                          optimizer=optimizer,
@@ -65,9 +65,6 @@ for i in all_epoch_loss:
 
 for i in all_mean_dist:
     cpu_mean_dist.append(i.cpu().numpy())
-
-for i in all_mean_obj_diff:
-    cpu_mean_obj_diff.append(i.cpu().numpy())
 
 # save results and model
 save_dir = f"results/archive_distill100d"
