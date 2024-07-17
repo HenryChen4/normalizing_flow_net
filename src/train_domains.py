@@ -68,7 +68,8 @@ def get_flow_config(flow_name):
             "hypernet_config": {
                 "hidden_features": (512, 512, 512),
                 "activation": nn.LeakyReLU
-            }
+            },
+            "permute_seed": 41488
         }
     }
 
@@ -138,6 +139,6 @@ def main(
     plt.clf()
 
 # usage:
-# python -m src.train_domains --domain_name=sphere_100d --flow_name=sphere_100d_v1 --qd_name=normal --optimizer_name=ranger --num_iters=50
+# python -m src.train_domains --domain_name=sphere_100d --flow_name=sphere_100d_v1 --qd_name=normal --optimizer_name=ranger --num_iters=1
 if __name__ == "__main__":
     fire.Fire(main)

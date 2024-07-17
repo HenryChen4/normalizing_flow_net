@@ -73,7 +73,7 @@ def sphere(solutions: torch.Tensor):
     objective_batch = (raw_obj - worst_obj) / (best_obj - worst_obj) * 100
 
     # Calculate measures.
-    clipped = solutions.copy()
+    clipped = solutions.clone()
     clip_mask = (clipped < -5.12) | (clipped > 5.12)
     clipped[clip_mask] = 5.12 / clipped[clip_mask]
     measures_batch = torch.cat(
