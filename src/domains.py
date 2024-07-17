@@ -110,9 +110,9 @@ DOMAIN_CONFIGS = {
         "name": "sphere_100d",
         "obj_meas_func": sphere,
         "solution_dim": 100,
-        "solution_bounds": [],
+        "solution_bounds": None,
         "initial_sol": np.zeros(100).tolist(),
-        "feature_low": [],
-        "feature_high": [],
+        "feature_low": [-100 / 2 * 5.12, -100 / 2 * 5.12],
+        "feature_high": [100 / 2 * 5.12, 100 / 2 * 5.12],
     }
 }

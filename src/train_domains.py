@@ -60,6 +60,15 @@ def get_flow_config(flow_name):
                 "activation": nn.LeakyReLU
             },
             "permute_seed": 81562
+        },
+        "sphere_100d_v1": {
+            "solution_dim": 100,
+            "num_coupling_layers": 120,
+            "num_context": 3,
+            "hypernet_config": {
+                "hidden_features": (512, 512, 512),
+                "activation": nn.LeakyReLU
+            }
         }
     }
 
@@ -129,6 +138,6 @@ def main(
     plt.clf()
 
 # usage:
-# python -m src.train_domains --domain_name=arm_10d --flow_name=arm_10d_v1 --qd_name=normal --optimizer_name=ranger --num_iters=1
+# python -m src.train_domains --domain_name=sphere_100d --flow_name=sphere_100d_v1 --qd_name=normal --optimizer_name=ranger --num_iters=50
 if __name__ == "__main__":
     fire.Fire(main)
