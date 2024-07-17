@@ -66,7 +66,7 @@ def get_flow_config(flow_name):
             "num_coupling_layers": 120,
             "num_context": 3,
             "hypernet_config": {
-                "hidden_features": (512, 512, 512),
+                "hidden_features": (256, 256, 256),
                 "activation": nn.LeakyReLU
             },
             "permute_seed": 41488
