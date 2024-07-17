@@ -20,7 +20,7 @@ from tqdm import (
 
 from src.model_loading import get_cartesian_batched
 
-def create_flow(arm_dim,
+def create_flow(solution_dim,
                 num_coupling_layers,
                 num_context,
                 hypernet_config,
@@ -40,14 +40,14 @@ def create_flow(arm_dim,
         torch.manual_seed(permute_seed + i)
 
         single_transform = GeneralCouplingTransform(
-            features=arm_dim,
+            features=solution_dim,
             context=num_context,
             univariate=MonotonicAffineTransform,
             **hypernet_config
         ).double()
         permute_transform = UnconditionalTransform(
             PermutationTransform,
-            torch.randperm(arm_dim),
+            torch.randperm(solution_dim),
             buffer=True
         ).double()
         transforms.append(single_transform)
@@ -57,8 +57,8 @@ def create_flow(arm_dim,
         transform=transforms,
         base=UnconditionalDistribution(
             DiagNormal,
-            loc=torch.full((arm_dim, ), 0, dtype=torch.float64),
-            scale=torch.full((arm_dim, ), torch.pi/3, dtype=torch.float64),
+            loc=torch.full((solution_dim, ), 0, dtype=torch.float64),
+            scale=torch.full((solution_dim, ), torch.pi/3, dtype=torch.float64),
             buffer=True
         )
     )
@@ -136,19 +136,16 @@ def train_archive_distill(flow_network,
 
     all_epoch_loss = []
     all_mean_dist = []
-    # all_mean_obj_diff = []
 
     for epoch in trange(num_iters):
         epoch_loss = 0.
         mean_dist = 0.
-        # mean_obj_diff = 0.
 
         for i, (data_tuple) in enumerate(tqdm(train_loader)):
             original_arm_poses = data_tuple[0].to(device)
             original_context = data_tuple[1].to(device)
             
             original_cart_poses = original_context[:,:-1]
-            # original_obj = original_context[:,-1]
 
             batch_loss = -flow_network(original_context).log_prob(original_arm_poses)
             batch_loss = batch_loss.mean()
@@ -161,10 +158,6 @@ def train_archive_distill(flow_network,
             all_distances = torch.norm(generated_cart_poses - original_cart_poses, p=2, dim=1)
             mean_distance = all_distances.mean().to(device)
             mean_dist += mean_distance
-
-            # # calculate obj diff
-            # generated_obj = 1.0-torch.std(generated_arm_poses, axis=1).mean()
-            # mean_obj_diff += (generated_obj - original_obj.mean())
 
             optimizer.zero_grad()
             batch_loss.backward()
@@ -180,6 +173,5 @@ def train_archive_distill(flow_network,
         
         all_epoch_loss.append(epoch_loss/len(train_loader))
         all_mean_dist.append(mean_dist/len(train_loader))
-        # all_mean_obj_diff.append(mean_obj_diff/len(train_loader))
     
-    return all_epoch_loss, all_mean_dist, # all_mean_obj_diff
+    return all_epoch_loss, all_mean_dist

@@ -53,12 +53,26 @@ def get_evaluation_archives(archive_model,
 
         # pylint: disable-next = not-callable
         solutions: torch.Tensor = archive_model(context).sample()
-        objectives, features = simulate(solutions.numpy(), link_lengths=np.ones(arm_dim))
+
+        solutions = solutions.detach().cpu().numpy()
+
+        objectives, features = simulate(solutions, link_lengths=np.ones(arm_dim))
+
+        sorted_indices = np.argsort(objectives)
+        objectives_sorted = objectives[sorted_indices] 
+
+        i = 0
+        while objectives_sorted[i] < 0:
+            print(f"setting {objectives_sorted[i]} to 0")
+            objectives_sorted[i] = 0
+            i += 1
+        print("beautifying done!")
+
+        objectives = np.zeros_like(objectives_sorted)
+        objectives[sorted_indices] = objectives_sorted
 
     # set archive model to train mode
     archive_model.train()
-
-    solutions = solutions.detach().cpu().numpy()
 
     archives["objective"].add(solutions, objectives, feature_grid)
     archives["feature_error"].add(
@@ -86,7 +100,7 @@ def visualize_archives(archives):
     plt.show()
 
 # testing distill 3 model
-model = load_model("./results/archive_distill3/model_test.pth")
+model = load_model("./results/archive_distill100d/model_test.pth")
 
 archives = get_evaluation_archives(archive_model=model,
                                    arm_dim=10,

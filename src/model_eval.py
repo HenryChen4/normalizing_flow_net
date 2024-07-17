@@ -48,3 +48,7 @@ def visualize_point(model, context, num_arms):
               ax=ax, 
               context=context if context.shape[0] == 2 else context[:-1])
     plt.show()
+
+# visualize_point(model=load_model("./results/archive_distill100d/model_test.pth"),
+                # context=torch.tensor([-5.424234, 2.141414, 1]),
+                # num_arms=50)
