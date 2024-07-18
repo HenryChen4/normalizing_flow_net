@@ -2,6 +2,8 @@ import torch.nn as nn
 import torch
 from src.nfn_model import create_flow, train_archive_distill
 
+from src.cnf_model import create_cnf, train
+
 from src.create_archive import gather_solutions
 from ranger_adabelief import RangerAdaBelief as Ranger
 
@@ -41,7 +43,7 @@ def get_qd_config(qd_name):
 
 def get_flow_config(flow_name):
     flows = {
-        "arm_10d_v1": {
+        "arm_10d_nfn_v1": {
             "solution_dim": 10,
             "num_coupling_layers": 15,
             "num_context": 3,
@@ -51,7 +53,7 @@ def get_flow_config(flow_name):
             },
             "permute_seed": 13513
         },
-        "arm_10d_v2": {
+        "arm_10d_nfn_v2": {
             "solution_dim": 10,
             "num_coupling_layers": 12,
             "num_context": 3,
@@ -61,7 +63,7 @@ def get_flow_config(flow_name):
             },
             "permute_seed": 81562
         },
-        "sphere_100d_v1": {
+        "sphere_100d_nfn_v1": {
             "solution_dim": 100,
             "num_coupling_layers": 120,
             "num_context": 3,
@@ -70,6 +72,15 @@ def get_flow_config(flow_name):
                 "activation": nn.LeakyReLU
             },
             "permute_seed": 41488
+        },
+        "arm_10d_cnf_v1": {
+            "solution_dim": 10,
+            "num_transformations": 5,
+            "num_context": 3,
+            "hypernet_config": {
+                "hidden_features": (256, 256, 256),
+                "activation": nn.ELU
+            }
         }
     }
 

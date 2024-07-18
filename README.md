@@ -1,3 +1,7 @@
+TODO:
+
+1. Refactor train_archive, nfn_model, cnf_model, and eval code to work for all domains.
+
 ```
 conda create -n "nfn_2d" python=3.10
 conda activate "nfn_2d"
