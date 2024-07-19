@@ -106,10 +106,13 @@ def gather_solutions(qd_config,
         objective = sol["objective"]
         measures = sol["measures"]
 
-        train_tuple = (arm_pose,
-                       torch.cat((measures, objective.unsqueeze(dim=0))))
+        single_train_tuple = (
+            torch.tensor(arm_pose.detach().numpy(), dtype=torch.float32),
+            torch.cat((torch.tensor(measures.detach().numpy(), dtype=torch.float32), 
+                       torch.tensor(objective.detach().numpy(), dtype=torch.float32).unsqueeze(dim=0)))
+        )
 
-        all_sols.append(train_tuple)
+        all_sols.append(single_train_tuple)
 
     for elite in archive:
         arm_pose = elite["solution"]
@@ -117,11 +120,12 @@ def gather_solutions(qd_config,
         measures = elite["measures"]
 
         single_train_tuple = (
-            torch.tensor(arm_pose, dtype=torch.float64),
-            torch.cat((torch.tensor(measures), torch.tensor(objective).unsqueeze(dim=0)))
+            torch.tensor(arm_pose, dtype=torch.float32),
+            torch.cat((torch.tensor(measures, dtype=torch.float32), 
+                       torch.tensor(objective, dtype=torch.float32).unsqueeze(dim=0)))
         )
         
         all_sols.append(single_train_tuple)
-    
+
     data_loader = create_loader(all_sols, batch_size, shuffle=True)
     return data_loader

@@ -75,7 +75,7 @@ def get_flow_config(flow_name):
         },
         "arm_10d_cnf_v1": {
             "solution_dim": 10,
-            "num_transformations": 5,
+            "num_transforms": 5,
             "num_context": 3,
             "hypernet_config": {
                 "hidden_features": (256, 256, 256),
@@ -118,12 +118,12 @@ def main(
     else: 
         print(f"{optimizer_name} optimizer not yet implemented!")
 
-    flow = create_flow(**get_flow_config(flow_name))
-    all_epoch_loss, all_mean_dist = train_archive_distill(flow_network=flow,
-                                                          train_loader=train_loader,
-                                                          num_iters=num_iters,
-                                                          optimizer=optimizer,
-                                                          learning_rate=learning_rate)
+    flow = create_cnf(**get_flow_config(flow_name))
+    all_epoch_loss, all_mean_dist = train(cnf_network=flow,
+                                          train_loader=train_loader,
+                                          num_iters=num_iters,
+                                          optimizer=optimizer,
+                                          learning_rate=learning_rate)
     
     # saving plots
     cpu_epoch_loss = []
@@ -150,6 +150,9 @@ def main(
     plt.clf()
 
 # usage:
+# for nfn:
 # python -m src.train_domains --domain_name=sphere_100d --flow_name=sphere_100d_v1 --qd_name=normal --optimizer_name=ranger --num_iters=1
+# for cnf:
+# python -m src.train_domains --domain_name=arm_10d --flow_name=arm_10d_cnf_v1 --qd_name=normal --optimizer_name=ranger --num_iters=1
 if __name__ == "__main__":
     fire.Fire(main)

@@ -1,19 +1,20 @@
 import torch
 import torch.nn as nn
 
-from zuko.flows.continuous import CNF
+from zuko.flows.continuous import CNF, FFJTransform
 from zuko.flows import Flow, UnconditionalDistribution
 from zuko.distributions import DiagNormal
 
 from tqdm import trange, tqdm
 
-# TODO: make this work for all domains
+from src.model_loading import get_cartesian_batched
+
+# TODO: make this work for all domains, currently only works for arm domain
 
 def create_cnf(solution_dim,
                num_transforms,
                num_context,
-               hypernet_config,
-               sigma):
+               hypernet_config):
     """Creates continuous normalizing flow
 
     Args:
@@ -24,19 +25,19 @@ def create_cnf(solution_dim,
     """
     transforms = []
     for i in range(num_transforms):
-        single_transform = CNF(features=solution_dim,
-                               context=num_context,
-                               **hypernet_config)
+        single_transform = FFJTransform(features=solution_dim,
+                                        context=num_context,
+                                        **hypernet_config)
         transforms.append(single_transform)
     flow = Flow(
         transform=transforms,
         base=UnconditionalDistribution(
             DiagNormal,
             loc=torch.full((solution_dim, ), 0, dtype=torch.float32),
-            scale=torch.full((solution_dim, ), sigma, dtype=torch.float32),
+            scale=torch.full((solution_dim, ), torch.pi/3, dtype=torch.float32),
             buffer=True
         )
-    )
+    ).float()
 
     return flow
 
@@ -44,8 +45,7 @@ def train(cnf_network,
           train_loader,
           num_iters,
           optimizer,
-          learning_rate,
-          domain_func):
+          learning_rate):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     cnf_network.to(device)
     optimizer = optimizer(cnf_network.parameters(), lr=learning_rate)
@@ -67,7 +67,8 @@ def train(cnf_network,
             batch_loss = batch_loss.mean()
 
             generated_soln = cnf_network(original_context).sample().to(device)
-            generated_measures, _ = domain_func(generated_soln.cpu().detach().numpy()).to(device)
+            generated_measures = get_cartesian_batched(generated_soln.cpu().detach().numpy()
+                                                       ).to(device)
             all_feature_err = torch.norm(generated_measures - original_measures, p=2, dim=1)
             mean_feature_err = all_feature_err.mean().to(device)
             mean_err += mean_feature_err
@@ -89,14 +90,30 @@ def train(cnf_network,
     
     return all_epoch_loss, all_feature_err
 
-hypernet_config = {
-    "hidden_features": (128, 128, 128),
-    "activation": nn.ELU
-}
+# hypernet_config = {
+#     "hidden_features": (1024, 1024, 1024),
+#     "activation": nn.LeakyReLU 
+# }
 
-flow = create_cnf(solution_dim=10,
-                  num_transforms=5,
-                  num_context=3,
-                  hypernet_config=hypernet_config,
-                  sigma=torch.pi/3)
+# cnf = CNF(features=10,
+#           context=3,
+#           **hypernet_config)
 
+# print(cnf)
+
+# cnf = create_cnf(solution_dim=10,
+#                  num_transforms=5,
+#                  num_context=3,
+#                  hypernet_config=hypernet_config)
+
+# print(cnf)
+
+# test_context1 = torch.tensor([[1, 4, 2], [4, 2, 3]], dtype=torch.float32)
+# test_soln1 = torch.tensor([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+#                            [5, 1, 3, 2, 4, 7, 8, 6, 9, 10]], dtype=torch.float32)
+
+# loss = -cnf(test_context1).log_prob(test_soln1)
+# test_sample1 = cnf(test_context1).sample()
+
+# print(loss)
+# print(test_sample1)
