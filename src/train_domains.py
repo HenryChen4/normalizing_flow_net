@@ -75,7 +75,7 @@ def get_flow_config(flow_name):
         },
         "arm_10d_cnf_v1": {
             "solution_dim": 10,
-            "num_transforms": 5,
+            "num_transforms": 1,
             "num_context": 3,
             "hypernet_config": {
                 "hidden_features": (256, 256, 256),
@@ -92,7 +92,7 @@ def main(
     flow_name: str,
     qd_name: str,
     optimizer_name: str,
-    batch_size=16,
+    batch_size=64,
     num_iters=100,
     learning_rate=5e-5
 ):
