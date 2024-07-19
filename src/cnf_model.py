@@ -49,6 +49,8 @@ def train(cnf_network,
     device = "cuda" if torch.cuda.is_available() else "cpu"
     cnf_network.to(device)
     optimizer = optimizer(cnf_network.parameters(), lr=learning_rate)
+
+    print(sum(p.num() for p in cnf_network.parameters()))
     
     all_epoch_loss = []
     all_feature_err = []
